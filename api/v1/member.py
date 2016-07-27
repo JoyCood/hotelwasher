@@ -34,6 +34,38 @@ def register(socket, data):
     password = unpack_data.password.strip()
     authcode = unpack_data.authcode
     nick     = unpack_data.nick.strip()
+    confirm_password = unpack_data.confirm_password.strip()
+
+    pack_data = member_pb2.Register_Response()
+    
+    if password != confirm_password:
+        pack_data.code = member_pb2.ERROR_PASSWORD_NOT_EQUAL
+        common.send(socket, pack_data)
+        return
+
+    filter = {"phone":phone}
+    member = Member.find_one(filter);
+    
+    if member not None:
+        pack_data.code = member_pb2.ERROR_MEMBER_EXIST
+        common.send(socket, pack_data)
+        return
+
+    member_mix = Member_Mix.find_one(filter)
+
+    if member_mix is None or member_mix['authcode'] != authcode:
+        pack_data.code = member_pb2.ERROR_AUTHCODE_INVALID
+        common.send(socket, pack_data)
+        return
+    elif member_mix['expired'] < int(time.time()):
+        pack_data.code = member_pb2.ERROR_AUTHCODE_EXPIRED
+        common.send(socket, pack_data)
+        return
+    
+    doc = {
+        "phone": phone,
+        ""
+    }
 
 def verify_authcode(socket, data):
     unpack_data = member_pb2.Verify_Phone_Request()
@@ -43,7 +75,7 @@ def verify_authcode(socket, data):
     authcode = unpack_data.authcode
     
     phone_number = phonenumbers.parse(phone, "CN")
-    pack_data = member_pb2.Register_Response()
+    pack_data = member_pb2.Verify_Authcode_Response()
 
     if not phonenumbers.is_valid_number(phone_number):
         pack_data.code = member_pb2.ERROR_PHONE_INVALID
