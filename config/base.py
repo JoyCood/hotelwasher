@@ -1,6 +1,9 @@
 #!/usr/bin/python 
 # -*- coding: utf-8 -*- 
 
+SERVER_HOST = "localhost"
+SERVER_PORT = 8888
+
 SOCKET_HEADER_LENGTH   = 20
 SOCKET_RECEIVE_TIMEOUT = 12
 

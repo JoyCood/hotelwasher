@@ -1,0 +1,68 @@
+enum Protocol {
+    UNKNOW_CMD       = 0;
+    PHONE_LOGIN      = 110001;
+    REGISTER         = 110002;
+    REQUEST_AUTHCODE = 110003;
+    VERIFY_AUTHCODE  = 110004;
+}
+
+enum Error_Code {
+    SUCCESS = 0;
+    ERROR_INVALID_PASSWORD   = 110000;
+    ERROR_PASSWORD_NOT_EQUAL = 110001;
+    ERROR_MEMBER_EXIST       = 110002;
+    ERROR_AUTHCODE_INVALID   = 110003;
+    ERROR_PHONE_INVALID      = 110004;
+    ERROR_AUTHCODE_EXPIRED   = 110005;
+    ERROR_MEMBER_NOT_FOUND   = 110006;
+}
+
+message Member {
+    required string id = 1;
+    optional string nick = 2;
+    optional string phone = 3;
+    optional string avatar_small = 4;
+    optional string avatar_mid = 5;
+    optional string avatar_big = 6;
+}
+
+message Register_Request {
+    required string phone = 1;
+    required int32  authcode = 2;
+    required string password = 3;
+    required string confirm_password = 4;
+    required string nick = 5;
+}
+
+message Register_Response {
+    optional Member member = 1;
+    required Error_Code error_code = 2;
+}
+
+message Phone_Login_Reqeust {
+    required string phone = 1;
+    required string password = 2;
+}
+
+message Phone_Login_Response {
+    optional Member member = 1;
+    required Error_Code error_code = 2;
+}
+
+message Verify_Authcode_Request {
+    required string phone = 1;
+    required int32  authcode = 2;
+}
+
+message Verify_Authcode_Response {
+    required Error_Code error_code = 1;
+}
+
+message Request_Authcode_Request {
+    required string phone = 1;
+}
+
+message Request_Authcode_Response {
+    optional int32 authcode = 1;
+    required Error_Code error_code = 2;
+}

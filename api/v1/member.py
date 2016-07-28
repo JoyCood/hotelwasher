@@ -1,20 +1,24 @@
 #!/usr/bin/python 
 # -*- coding: utf-8 -*-
 
-from model.member.main import member
+from model.member.main import Member
+from model.member.mix  import Member_Mix
 from protocol.v1 import member_pb2
 from config import (mapper, base)
 from bson.objectid import ObjectId 
 
+import common
 import phonenumbers
 
 import sys
 import hashlib
 import random
+import time
 
 def handle(socket, protocol, data):
     handler = mapper.handler.get(protocol)
     if handler == None:
+        print 'handler not found'
         return
     fun = getattr(sys.modules[__name__], handler)
     fun(socket, data)
@@ -46,7 +50,7 @@ def register(socket, data):
     filter = {"phone":phone}
     member = Member.find_one(filter);
     
-    if member not None:
+    if member is not None:
         pack_data.code = member_pb2.ERROR_MEMBER_EXIST
         common.send(socket, pack_data)
         return
@@ -63,8 +67,7 @@ def register(socket, data):
         return
     
     doc = {
-        "phone": phone,
-        ""
+        "phone": phone
     }
 
 def verify_authcode(socket, data):
@@ -108,15 +111,16 @@ def request_authcode(socket, data):
     pack_data = member_pb2.Request_Authcode_Response()
 
     if not phonenumbers.is_valid_number(phone_number):
-        pack_data.code = member_pb2.ERROR_PHONE_INVALID
+        pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
         common.send(socket, pack_data)
+        print 'phone invalid'
         return
     filter = {"phone":phone}
 
     member_mix = Member_Mix.find_one(filter)
     
     now = int(time.time())
-
+    authcode = None
     if member_mix is None:
         authcode = random.randint(base.AUTHCODE_MIN, base.AUTHCODE_MAX)
         expired  = now + base.AUTHCODE_EXPIRED_AFTER
@@ -126,9 +130,10 @@ def request_authcode(socket, data):
             "expired": expired,
             "update_time": now
         }
-        Member_Mix.insert_one(doc)
+        res = Member_Mix.insert_one(doc)
+        print 'create new authcode:%s' % (res)
     elif member_mix['expired'] < now:
-        authcode = random.randint()
+        authcode = random.randint(base.AUTHCODE_MIN, base.AUTHCODE_MAX)
         expired  = now + base.AUTHCODE_EXPIRED_AFTER
         doc = {
             "$set": {
@@ -137,8 +142,11 @@ def request_authcode(socket, data):
                 "update_time": now
             }        
         }
-        Member_Mix.update_one(filter, doc)
-    pack_data.code = member_pb2.ERROR_SUCCESS
-    pack_data.authcode = authcode
-    common.send(socket, pack_data)
+        res = Member_Mix.update_one(filter, doc)
+        print 'update authcode:%s' % (res)
+    pack_data.error_code = member_pb2.SUCCESS
+    pack_data.authcode = authcode or member_mix['authcode']
+
+    common.send(socket,member_pb2.REQUEST_AUTHCODE, pack_data)
+    print 'request authcode success:'
 
