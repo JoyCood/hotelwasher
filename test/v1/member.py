@@ -16,13 +16,46 @@ def send(socket, protocol, data):
     body_len = data.ByteSize()
     header = struct.pack('5I', body_len, 1, protocol, 0, 1)
     packet = header + packet
-    res = socket.send(packet)
+    return socket.send(packet)
+
+
+def rec(socket):
+    header = socket.recv(12)
+    if header:
+        (body_len, protocol, num) = struct.unpack('3I', header)
+        if body_len:
+            body = socket.recv(body_len)
+            return body
+        else:
+            return False
+    else:
+        return False
+
+
+#def register(socket):
+    
 
 def request_authcode(socket):
     member = member_pb2.Request_Authcode_Request()
     member.phone = "+8618565389757"
-    send(socket,110003, member)
-    print 'request_authcode'
+    send(socket,member_pb2.REQUEST_AUTHCODE, member)
+    body = rec(socket)
+    if body:
+        pb = member_pb2.Request_Authcode_Response()
+        pb.ParseFromString(body)
+        verify_authcode(socket, pb.authcode)
+
+def verify_authcode(socket, authcode):
+    pb = member_pb2.Verify_Authcode_Request()
+    pb.phone = '+8618565389757'
+    pb.authcode = authcode
+
+    send(socket, member_pb2.VERIFY_AUTHCODE, pb)
+    body = rec(socket)
+    if body:
+        unpack_data = member_pb2.Verify_Authcode_Response()
+        unpack_data.ParseFromString(body)
+        print 'verify_authcode:%s' % (unpack_data.error_code)
 
 if __name__ == '__main__':
     filepath = os.path.realpath(__file__)

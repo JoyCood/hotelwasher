@@ -5,6 +5,7 @@ from model.member.main import Member
 from model.member.mix  import Member_Mix
 from protocol.v1 import member_pb2
 from config import (mapper, base)
+from helper import helper
 from bson.objectid import ObjectId 
 
 import common
@@ -71,10 +72,9 @@ def register(socket, data):
     }
 
 def verify_authcode(socket, data):
-    unpack_data = member_pb2.Verify_Phone_Request()
-    unpack_data = unpack_data.ParseFromString(data)
-
-    phone    = unpack_data.phone.strip()
+    unpack_data = member_pb2.Verify_Authcode_Request()
+    unpack_data.ParseFromString(data)
+    phone = unpack_data.phone.strip()
     authcode = unpack_data.authcode
     
     phone_number = phonenumbers.parse(phone, "CN")
@@ -82,7 +82,7 @@ def verify_authcode(socket, data):
 
     if not phonenumbers.is_valid_number(phone_number):
         pack_data.code = member_pb2.ERROR_PHONE_INVALID
-        common.send(socket, pack_data)
+        common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
         return
     
     filter = {
@@ -92,14 +92,17 @@ def verify_authcode(socket, data):
     member_mix = Member_Mix.find_one(filter)
     if member_mix is None or member_mix['authcode'] != authcode:
         pack_data.code = member_pb2.ERROR_AUTHCODE_INVALID
-        common.send(socket, pack_data)
+        common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
+        print 'authcode invalid:%s' % (authcode)
         return
-    elif attach['expired'] < int(time.time()):
+    elif member_mix['expired'] < int(time.time()):
         pack_data.code = member_pb2.ERROR_AUTHCODE_EXPIRED
-        common.send(socket, pack_data)
+        common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
+        print 'authcode expired'
         return
-    pack_data.code = member_pb2.ERROR_SUCCESS
-    common.send(socket, pack_data)
+    pack_data.error_code = member_pb2.SUCCESS
+    common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
+    print 'verify authcode success'
 
 def request_authcode(socket, data):
     unpack_data = member_pb2.Request_Authcode_Request()
@@ -144,9 +147,13 @@ def request_authcode(socket, data):
         }
         res = Member_Mix.update_one(filter, doc)
         print 'update authcode:%s' % (res)
+
+    authcode = authcode or member_mix['authcode']
     pack_data.error_code = member_pb2.SUCCESS
-    pack_data.authcode = authcode or member_mix['authcode']
+    pack_data.authcode = authcode
 
     common.send(socket,member_pb2.REQUEST_AUTHCODE, pack_data)
-    print 'request authcode success:'
+    text = "【趣游泳】您的验证码是是" + str(authcode)  
+    response = helper.send_sms(text, '18565389757')
+    print 'request authcode response:%s' % (response)
 
