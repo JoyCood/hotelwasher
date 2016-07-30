@@ -1,6 +1,6 @@
 enum Protocol {
     UNKNOW_CMD       = 0;
-    PHONE_LOGIN      = 110000;
+    LOGIN            = 110000;
     REGISTER         = 110001;
     REQUEST_AUTHCODE = 110002;
     VERIFY_AUTHCODE  = 110003;
@@ -8,7 +8,7 @@ enum Protocol {
 
 enum Error_Code {
     SUCCESS = 0;
-    ERROR_INVALID_PASSWORD   = 110000;
+    ERROR_PASSWORD_INVALID   = 110000;
     ERROR_PASSWORD_NOT_EQUAL = 110001;
     ERROR_MEMBER_EXIST       = 110002;
     ERROR_AUTHCODE_INVALID   = 110003;
@@ -39,12 +39,12 @@ message Register_Response {
     required Error_Code error_code = 2;
 }
 
-message Phone_Login_Reqeust {
+message Login_Reqeust {
     required string phone = 1;
     required string password = 2;
 }
 
-message Phone_Login_Response {
+message Login_Response {
     optional Member member = 1;
     required Error_Code error_code = 2;
 }

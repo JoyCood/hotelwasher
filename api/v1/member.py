@@ -19,7 +19,7 @@ import time
 
 def handle(socket, protocol, data):
     handler = mapper.handler.get(protocol)
-    if handler == None:
+    if handler is None:
         print 'handler not found'
         return
     fun = getattr(sys.modules[__name__], handler)
@@ -31,7 +31,40 @@ def login(socket, data):
     
     phone = unpack_data.phone.strip()
     password = unpack_data.password.strip()
-    
+
+    pack_data = member_pb2.Login_Response()
+    md5 = hashlib.md5()
+    md5.update(password)
+    password = md5.hexdigest()
+
+    phone_number = phonenumbers.parse(phone, "CN")
+
+    if not phonenumbers.is_valid_number(phone_number):
+        pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
+        common.send(socket, member_pb2.LOGIN, pack_data)
+        print 'phone invalid'
+        return
+
+    filter = {
+        "phone": phone
+    }
+    member = Member.find_one(filter)
+    if member is None:
+        pack_data.error_code = member_pb2.ERROR_MEMBER_NOT_FOUND
+        common.send(socket, member_pb2.LOGIN, pack_data)
+        print 'member not found'
+        return
+    elif member['password'] != password:
+        pack_data.error_code = member_pb2.ERROR_PASSWORD_INVALID
+        common.send(socket, member_pb2.LOGIN, pack_data)
+        print 'password invalid'
+        return
+    pack_data.member.id = str(member['_id'])
+    pack_data.member.nick = member['nick']
+    pack_data.error_code = member_pb2.SUCCESS
+    common.send(socket, member_pb2.LOGIN, pack_data)
+    print 'login success'
+
 def register(socket, data):
     unpack_data = member_pb2.Register_Request()
     unpack_data.ParseFromString(data)
@@ -42,12 +75,19 @@ def register(socket, data):
     confirm_password = unpack_data.confirm_password.strip()
     authcode = unpack_data.authcode
 
+    phone_number = phonenumbers.parse(phone, "CN")
+
     pack_data = member_pb2.Register_Response()
     
     if password != confirm_password:
-        pack_data.code = member_pb2.ERROR_PASSWORD_NOT_EQUAL
+        pack_data.error_code = member_pb2.ERROR_PASSWORD_NOT_EQUAL
         common.send(socket, member_pb2.REGISTER, pack_data)
         print 'password not equal'
+        return
+    elif not phonenumbers.is_valid_number(phone_number):
+        pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
+        common.send(socket, member_pb2.REGISTER, pack_data)
+        print 'phone invalid'
         return
 
     now    = int(time.time()) 
@@ -79,6 +119,7 @@ def register(socket, data):
         "nick": nick,
         "phone": phone,
         "password": password,
+        "status": 0,
         "reg_time": now,
         "last_login": now
     }
@@ -104,7 +145,7 @@ def verify_authcode(socket, data):
     pack_data = member_pb2.Verify_Authcode_Response()
 
     if not phonenumbers.is_valid_number(phone_number):
-        pack_data.code = member_pb2.ERROR_PHONE_INVALID
+        pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
         common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
         return
     

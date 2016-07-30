@@ -33,6 +33,16 @@ def rec(socket):
     else:
         return False
 
+def login(socket):
+    pb = member_pb2.Login_Reqeust()
+    pb.phone = TEST_PHONE
+    pb.password = 'iwasher'
+    send(socket, member_pb2.LOGIN, pb)
+    body = rec(socket)
+    if body:
+        pb = member_pb2.Login_Response()
+        pb.ParseFromString(body)
+        print pb
 
 def register(socket, authcode):
     pb = member_pb2.Register_Request()
