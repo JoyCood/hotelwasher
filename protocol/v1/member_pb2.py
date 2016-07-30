@@ -14,7 +14,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='member.proto',
   package='',
-  serialized_pb='\n\x0cmember.proto\"o\n\x06Member\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04nick\x18\x02 \x01(\t\x12\r\n\x05phone\x18\x03 \x01(\t\x12\x14\n\x0c\x61vatar_small\x18\x04 \x01(\t\x12\x12\n\navatar_mid\x18\x05 \x01(\t\x12\x12\n\navatar_big\x18\x06 \x01(\t\"m\n\x10Register_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\x12\x10\n\x08password\x18\x03 \x02(\t\x12\x18\n\x10\x63onfirm_password\x18\x04 \x02(\t\x12\x0c\n\x04nick\x18\x05 \x02(\t\"M\n\x11Register_Response\x12\x17\n\x06member\x18\x01 \x01(\x0b\x32\x07.Member\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code\"6\n\x13Phone_Login_Reqeust\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08password\x18\x02 \x02(\t\"P\n\x14Phone_Login_Response\x12\x17\n\x06member\x18\x01 \x01(\x0b\x32\x07.Member\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code\":\n\x17Verify_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\";\n\x18Verify_Authcode_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\")\n\x18Request_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\"N\n\x19Request_Authcode_Response\x12\x10\n\x08\x61uthcode\x18\x01 \x01(\x05\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code*l\n\x08Protocol\x12\x0e\n\nUNKNOW_CMD\x10\x00\x12\x11\n\x0bPHONE_LOGIN\x10\xb1\xdb\x06\x12\x0e\n\x08REGISTER\x10\xb2\xdb\x06\x12\x16\n\x10REQUEST_AUTHCODE\x10\xb3\xdb\x06\x12\x15\n\x0fVERIFY_AUTHCODE\x10\xb4\xdb\x06*\xe6\x01\n\nError_Code\x12\x0b\n\x07SUCCESS\x10\x00\x12\x1c\n\x16\x45RROR_INVALID_PASSWORD\x10\xb0\xdb\x06\x12\x1e\n\x18\x45RROR_PASSWORD_NOT_EQUAL\x10\xb1\xdb\x06\x12\x18\n\x12\x45RROR_MEMBER_EXIST\x10\xb2\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_INVALID\x10\xb3\xdb\x06\x12\x19\n\x13\x45RROR_PHONE_INVALID\x10\xb4\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_EXPIRED\x10\xb5\xdb\x06\x12\x1c\n\x16\x45RROR_MEMBER_NOT_FOUND\x10\xb6\xdb\x06')
+  serialized_pb='\n\x0cmember.proto\"o\n\x06Member\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04nick\x18\x02 \x01(\t\x12\r\n\x05phone\x18\x03 \x01(\t\x12\x14\n\x0c\x61vatar_small\x18\x04 \x01(\t\x12\x12\n\navatar_mid\x18\x05 \x01(\t\x12\x12\n\navatar_big\x18\x06 \x01(\t\"m\n\x10Register_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\x12\x10\n\x08password\x18\x03 \x02(\t\x12\x18\n\x10\x63onfirm_password\x18\x04 \x02(\t\x12\x0c\n\x04nick\x18\x05 \x02(\t\"M\n\x11Register_Response\x12\x17\n\x06member\x18\x01 \x01(\x0b\x32\x07.Member\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code\"6\n\x13Phone_Login_Reqeust\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08password\x18\x02 \x02(\t\"P\n\x14Phone_Login_Response\x12\x17\n\x06member\x18\x01 \x01(\x0b\x32\x07.Member\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code\":\n\x17Verify_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\";\n\x18Verify_Authcode_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\")\n\x18Request_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\"N\n\x19Request_Authcode_Response\x12\x10\n\x08\x61uthcode\x18\x01 \x01(\x05\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code*l\n\x08Protocol\x12\x0e\n\nUNKNOW_CMD\x10\x00\x12\x11\n\x0bPHONE_LOGIN\x10\xb0\xdb\x06\x12\x0e\n\x08REGISTER\x10\xb1\xdb\x06\x12\x16\n\x10REQUEST_AUTHCODE\x10\xb2\xdb\x06\x12\x15\n\x0fVERIFY_AUTHCODE\x10\xb3\xdb\x06*\xe6\x01\n\nError_Code\x12\x0b\n\x07SUCCESS\x10\x00\x12\x1c\n\x16\x45RROR_INVALID_PASSWORD\x10\xb0\xdb\x06\x12\x1e\n\x18\x45RROR_PASSWORD_NOT_EQUAL\x10\xb1\xdb\x06\x12\x18\n\x12\x45RROR_MEMBER_EXIST\x10\xb2\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_INVALID\x10\xb3\xdb\x06\x12\x19\n\x13\x45RROR_PHONE_INVALID\x10\xb4\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_EXPIRED\x10\xb5\xdb\x06\x12\x1c\n\x16\x45RROR_MEMBER_NOT_FOUND\x10\xb6\xdb\x06')
 
 _PROTOCOL = _descriptor.EnumDescriptor(
   name='Protocol',
@@ -27,19 +27,19 @@ _PROTOCOL = _descriptor.EnumDescriptor(
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PHONE_LOGIN', index=1, number=110001,
+      name='PHONE_LOGIN', index=1, number=110000,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='REGISTER', index=2, number=110002,
+      name='REGISTER', index=2, number=110001,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='REQUEST_AUTHCODE', index=3, number=110003,
+      name='REQUEST_AUTHCODE', index=3, number=110002,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='VERIFY_AUTHCODE', index=4, number=110004,
+      name='VERIFY_AUTHCODE', index=4, number=110003,
       options=None,
       type=None),
   ],
@@ -97,10 +97,10 @@ _ERROR_CODE = _descriptor.EnumDescriptor(
 
 Error_Code = enum_type_wrapper.EnumTypeWrapper(_ERROR_CODE)
 UNKNOW_CMD = 0
-PHONE_LOGIN = 110001
-REGISTER = 110002
-REQUEST_AUTHCODE = 110003
-VERIFY_AUTHCODE = 110004
+PHONE_LOGIN = 110000
+REGISTER = 110001
+REQUEST_AUTHCODE = 110002
+VERIFY_AUTHCODE = 110003
 SUCCESS = 0
 ERROR_INVALID_PASSWORD = 110000
 ERROR_PASSWORD_NOT_EQUAL = 110001

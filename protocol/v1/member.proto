@@ -1,9 +1,9 @@
 enum Protocol {
     UNKNOW_CMD       = 0;
-    PHONE_LOGIN      = 110001;
-    REGISTER         = 110002;
-    REQUEST_AUTHCODE = 110003;
-    VERIFY_AUTHCODE  = 110004;
+    PHONE_LOGIN      = 110000;
+    REGISTER         = 110001;
+    REQUEST_AUTHCODE = 110002;
+    VERIFY_AUTHCODE  = 110003;
 }
 
 enum Error_Code {

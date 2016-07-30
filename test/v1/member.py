@@ -7,6 +7,8 @@ import struct
 import inspect
 import json
 
+TEST_PHONE = '+8613533332421'
+
 def fun_filter(fun):
     name, value = fun
     return name
@@ -32,12 +34,23 @@ def rec(socket):
         return False
 
 
-#def register(socket):
-    
+def register(socket, authcode):
+    pb = member_pb2.Register_Request()
+    pb.phone = TEST_PHONE
+    pb.password = 'iwasher'
+    pb.confirm_password = 'iwasher'
+    pb.authcode = authcode
+    pb.nick = 'iwahser'
+    send(socket, member_pb2.REGISTER, pb)
+    body = rec(socket)
+    if body:
+        pb = member_pb2.Register_Response()
+        pb.ParseFromString(body)
+        print pb
 
 def request_authcode(socket):
     member = member_pb2.Request_Authcode_Request()
-    member.phone = "+8618565389757"
+    member.phone = TEST_PHONE
     send(socket,member_pb2.REQUEST_AUTHCODE, member)
     body = rec(socket)
     if body:
@@ -47,7 +60,7 @@ def request_authcode(socket):
 
 def verify_authcode(socket, authcode):
     pb = member_pb2.Verify_Authcode_Request()
-    pb.phone = '+8618565389757'
+    pb.phone = TEST_PHONE
     pb.authcode = authcode
 
     send(socket, member_pb2.VERIFY_AUTHCODE, pb)
@@ -55,6 +68,7 @@ def verify_authcode(socket, authcode):
     if body:
         unpack_data = member_pb2.Verify_Authcode_Response()
         unpack_data.ParseFromString(body)
+        register(socket, 4651)
         print 'verify_authcode:%s' % (unpack_data.error_code)
 
 if __name__ == '__main__':

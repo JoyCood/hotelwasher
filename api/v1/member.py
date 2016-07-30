@@ -7,6 +7,7 @@ from protocol.v1 import member_pb2
 from config import (mapper, base)
 from helper import helper
 from bson.objectid import ObjectId 
+from pymongo.errors import DuplicateKeyError
 
 import common
 import phonenumbers
@@ -35,41 +36,63 @@ def register(socket, data):
     unpack_data = member_pb2.Register_Request()
     unpack_data.ParseFromString(data)
 
+    nick     = unpack_data.nick.strip()
     phone    = unpack_data.phone.strip();
     password = unpack_data.password.strip()
-    authcode = unpack_data.authcode
-    nick     = unpack_data.nick.strip()
     confirm_password = unpack_data.confirm_password.strip()
+    authcode = unpack_data.authcode
 
     pack_data = member_pb2.Register_Response()
     
     if password != confirm_password:
         pack_data.code = member_pb2.ERROR_PASSWORD_NOT_EQUAL
-        common.send(socket, pack_data)
+        common.send(socket, member_pb2.REGISTER, pack_data)
+        print 'password not equal'
         return
 
+    now    = int(time.time()) 
     filter = {"phone":phone}
     member = Member.find_one(filter);
     
     if member is not None:
-        pack_data.code = member_pb2.ERROR_MEMBER_EXIST
-        common.send(socket, pack_data)
+        pack_data.error_code = member_pb2.ERROR_MEMBER_EXIST
+        common.send(socket, member_pb2.REGISTER, pack_data)
+        print 'member exist'
         return
 
     member_mix = Member_Mix.find_one(filter)
 
     if member_mix is None or member_mix['authcode'] != authcode:
-        pack_data.code = member_pb2.ERROR_AUTHCODE_INVALID
-        common.send(socket, pack_data)
+        pack_data.error_code = member_pb2.ERROR_AUTHCODE_INVALID
+        common.send(socket,member_pb2.REGISTER, pack_data)
+        print 'authcode invalid'
         return
-    elif member_mix['expired'] < int(time.time()):
-        pack_data.code = member_pb2.ERROR_AUTHCODE_EXPIRED
-        common.send(socket, pack_data)
+    elif member_mix['expired'] < now:
+        pack_data.error_code = member_pb2.ERROR_AUTHCODE_EXPIRED
+        common.send(socket, member_pb2.REGISTER, pack_data)
+        print 'authcode expired'
         return
-    
+    md5 = hashlib.md5()
+    md5.update(password)
+    password = md5.hexdigest()
     doc = {
-        "phone": phone
+        "nick": nick,
+        "phone": phone,
+        "password": password,
+        "reg_time": now,
+        "last_login": now
     }
+    try:
+        res = Member.insert_one(doc)
+        pack_data.member.id = str(res.inserted_id)
+        pack_data.error_code = member_pb2.SUCCESS
+        common.send(socket, member_pb2.REGISTER, pack_data)
+        print 'register success'
+    except DuplicateKeyError:
+        pack_data.error_code = member_pb2.ERROR_MEMBER_EXIST
+        common.send(socket, member_pb2.REGISTER, pack_data)
+        print 'duplicate key error, member exist'
+
 
 def verify_authcode(socket, data):
     unpack_data = member_pb2.Verify_Authcode_Request()
@@ -91,12 +114,12 @@ def verify_authcode(socket, data):
     }
     member_mix = Member_Mix.find_one(filter)
     if member_mix is None or member_mix['authcode'] != authcode:
-        pack_data.code = member_pb2.ERROR_AUTHCODE_INVALID
+        pack_data.error_code = member_pb2.ERROR_AUTHCODE_INVALID
         common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
         print 'authcode invalid:%s' % (authcode)
         return
     elif member_mix['expired'] < int(time.time()):
-        pack_data.code = member_pb2.ERROR_AUTHCODE_EXPIRED
+        pack_data.error_code = member_pb2.ERROR_AUTHCODE_EXPIRED
         common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
         print 'authcode expired'
         return

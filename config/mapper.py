@@ -11,6 +11,6 @@ model = {
 handler = {
     110000:"login", 
     110001:"register",
-    110003:"request_authcode",
-    110004:"verify_authcode"
+    110002:"request_authcode",
+    110003:"verify_authcode"
 }
