@@ -1,7 +1,7 @@
 #!/usr/bin/python 
 # -*- coding: utf-8 -*- 
 
-SERVER_HOST = "localhost"
+SERVER_HOST = ""
 SERVER_PORT = 8888
 
 SOCKET_HEADER_LENGTH   = 20
@@ -15,3 +15,5 @@ YUNPIAN_API_KEY = '13da877eed1a8c03add633f98268e993'
 YUNPIAN_HOST = 'sms.yunpian.com'
 YUNPIAN_PORT = 443
 YUNPIAN_TIMEOUT = 10
+
+WASHER_INIT_LEVEL = 5;

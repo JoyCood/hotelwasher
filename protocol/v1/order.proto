@@ -1,0 +1,94 @@
+enum Protocol {
+    UNKNOW_CMD  = 0;
+    PLACE_ORDER = 120000;
+    CANCEL_ORDER = 120001;
+}
+
+enum Error_Code {
+    SUCCESS = 0;
+    ERROR_CANNOT__CANCEL_ORDER = 120000;
+    ERROR_NOT_WASHER_FOUND = 120001;
+}
+
+enum Event {
+    NEW = 0; //取新数据
+    OLD = 1; //取老数据   
+}
+
+message Washer {
+    required string id        = 1;
+    required string phone     = 2;
+    required float  longitude = 3;
+    required float  latitude  = 4;
+    optional string nick      = 5;
+    optional float  level     = 6;
+}
+
+message Order {
+    required string id            = 1;
+    required string customer      = 2;
+    required string washer        = 3;
+    required float  price         = 4;
+    required int32  order_status  = 5;
+    required int32  order_type    = 6;
+    required int32  order_time    = 7;
+    required int32  customer_type = 8
+    optional int32  pay_from      = 9
+    optional int32  process_time  = 10;
+    optional int32  finish_time   = 11;
+    optional int32  cancel_time   = 12;
+    optional string cancel_by     = 13;
+    optional float  discount      = 14;
+}
+
+message Guest_Place_Order_Request {
+    required string phone      = 1;
+    required int32  authcode   = 2;
+    required int32  type       = 3;
+    required int32  total      = 4;
+    required float  longitude  = 5;
+    required float  latitude   = 6;
+    optional string address    = 7;
+}
+
+message Guest_Place_Order_Response {
+    optional Washer washer = 1;
+    required Error_Code error_code = 2;
+}
+
+message Member_Place_Order_Request {
+   required string phone     = 1;
+   required int32  type      = 2;
+   required int32  total     = 3;
+   required float  longitude = 4;
+   required float  latitude  = 5;
+   optional string address   = 6;
+}
+
+message Member_Place_Order_Response {
+    optional Washer washer = 1;
+    required Error_Code error_code = 2;
+}
+
+message Guest_Cancel_Order_Request {
+    required string phone    = 1;
+    required string secret   = 2;
+    required string order_id = 3;
+}
+
+message Guest_Cancel_Order_Response {
+    required Error_Code error_code = 1;
+}
+
+message Order_List_Request {
+    required string phone  = 1;
+    required string secret = 2;
+    optional int32  offset = 3;
+    optional int32  limit  = 4;
+    optional Event  event  = 5;
+}
+
+message Order_List_Response {
+    repeated Order order = 1;
+    required Error_Code error_code = 2;
+}

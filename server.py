@@ -12,7 +12,8 @@ class Request_Handler(SocketServer.BaseRequestHandler):
         running = True
         while running:
             header = self.request.recv(base.SOCKET_HEADER_LENGTH)
-            (body_len, api, protocol, num, sys) = struct.unpack('5I', header)
+            print repr(header)
+            (body_len, api, protocol, num, sys) = struct.unpack('>5I', header)
             print("body_len:%s api:%s protocol:%s num:%s sys:%s") % (body_len, api, protocol, num, sys)
             body = self.request.recv(body_len)
             __router__(self.request, api, protocol, body)

@@ -179,7 +179,7 @@ def request_authcode(socket, data):
 
     if not phonenumbers.is_valid_number(phone_number):
         pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
-        common.send(socket, pack_data)
+        common.send(socket, member_pb2.REQUEST_AUTHCODE, pack_data)
         print 'phone invalid'
         return
     filter = {"phone":phone}
@@ -218,6 +218,6 @@ def request_authcode(socket, data):
 
     common.send(socket,member_pb2.REQUEST_AUTHCODE, pack_data)
     text = "【趣游泳】您的验证码是是" + str(authcode)  
-    response = helper.send_sms(text, '18565389757')
+    response = helper.send_sms(text, phone[3:])
     print 'request authcode response:%s' % (response)
 

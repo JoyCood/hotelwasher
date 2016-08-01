@@ -5,40 +5,40 @@ import sys
 import socket 
 import struct 
 import inspect
-import json
+import common
 
 TEST_PHONE = '+8613533332421'
 
-def fun_filter(fun):
-    name, value = fun
-    return name
-
-def send(socket, protocol, data):
-    packet = data.SerializeToString()
-    body_len = data.ByteSize()
-    header = struct.pack('5I', body_len, 1, protocol, 0, 1)
-    packet = header + packet
-    return socket.send(packet)
-
-
-def rec(socket):
-    header = socket.recv(12)
-    if header:
-        (body_len, protocol, num) = struct.unpack('3I', header)
-        if body_len:
-            body = socket.recv(body_len)
-            return body
-        else:
-            return False
-    else:
-        return False
-
+#def fun_filter(fun):
+#    name, value = fun
+#    return name
+#
+#def send(socket, protocol, data):
+#    packet = data.SerializeToString()
+#    body_len = data.ByteSize()
+#    header = struct.pack('>5I', body_len, 1, protocol, 0, 1)
+#    packet = header + packet
+#    return socket.send(packet)
+#
+#
+#def rec(socket):
+#    header = socket.recv(12)
+#    if header:
+#        (body_len, protocol, num) = struct.unpack('3I', header)
+#        if body_len:
+#            body = socket.recv(body_len)
+#            return body
+#        else:
+#            return False
+#    else:
+#        return False
+#
 def login(socket):
     pb = member_pb2.Login_Reqeust()
     pb.phone = TEST_PHONE
     pb.password = 'iwasher'
-    send(socket, member_pb2.LOGIN, pb)
-    body = rec(socket)
+    common.send(socket, member_pb2.LOGIN, pb)
+    body = common.get(socket)
     if body:
         pb = member_pb2.Login_Response()
         pb.ParseFromString(body)
@@ -51,8 +51,8 @@ def register(socket, authcode):
     pb.confirm_password = 'iwasher'
     pb.authcode = authcode
     pb.nick = 'iwahser'
-    send(socket, member_pb2.REGISTER, pb)
-    body = rec(socket)
+    common.send(socket, member_pb2.REGISTER, pb)
+    body = common.get(socket)
     if body:
         pb = member_pb2.Register_Response()
         pb.ParseFromString(body)
@@ -61,8 +61,8 @@ def register(socket, authcode):
 def request_authcode(socket):
     member = member_pb2.Request_Authcode_Request()
     member.phone = TEST_PHONE
-    send(socket,member_pb2.REQUEST_AUTHCODE, member)
-    body = rec(socket)
+    common.send(socket,member_pb2.REQUEST_AUTHCODE, member)
+    body = common.get(socket)
     if body:
         pb = member_pb2.Request_Authcode_Response()
         pb.ParseFromString(body)
@@ -73,8 +73,8 @@ def verify_authcode(socket, authcode):
     pb.phone = TEST_PHONE
     pb.authcode = authcode
 
-    send(socket, member_pb2.VERIFY_AUTHCODE, pb)
-    body = rec(socket)
+    common.send(socket, member_pb2.VERIFY_AUTHCODE, pb)
+    body = common.get(socket)
     if body:
         unpack_data = member_pb2.Verify_Authcode_Response()
         unpack_data.ParseFromString(body)
@@ -97,7 +97,7 @@ if __name__ == '__main__':
             break
         fun2 = fun.strip('\n')
         fun_list = inspect.getmembers(sys.modules[__name__], inspect.isfunction)
-        fun_list = map(fun_filter, fun_list)
+        fun_list = map(common.fun_filter, fun_list)
         if fun2 in fun_list:
             f = getattr(sys.modules[__name__], fun2)
             f(client)
