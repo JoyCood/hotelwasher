@@ -1,7 +1,7 @@
 #!/usr/bin/python 
 # -*- coding: utf-8 -*- 
 
-SERVER_HOST = ""
+SERVER_HOST = ''
 SERVER_PORT = 8888
 
 SOCKET_HEADER_LENGTH   = 20

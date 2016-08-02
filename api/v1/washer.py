@@ -7,6 +7,7 @@ from protocol.v1 import washer_pb2
 from config import (mapper, base)
 from helper import helper
 from bson.objectid import ObjectId 
+from pymongo.errors import DuplicateKeyError
 
 import common
 import phonenumbers
@@ -17,7 +18,7 @@ import random
 import time
 
 def handle(socket, protocol, data):
-    handler = mapper.handler,get(protocol)
+    handler = mapper.handler.get(protocol)
     if handler is None:
         print 'handler not found'
         return
@@ -47,7 +48,7 @@ def login(socket, data):
 
     wahser = Washer.find_one(filter)
     if washer is None:
-        pack_data:error_code = washer_pb2.ERROR_WASHER_NOT_FOUND
+        pack_data.error_code = washer_pb2.ERROR_WASHER_NOT_FOUND
         common.send(socket, washer_pb2.LOGIN, pack_data)
         print 'washer not found'
         return
@@ -68,7 +69,7 @@ def login(socket, data):
     pack_data.error_code = washer_pb2.SUCCESS
     common.send(socket, washer_pb2.LOGIN, pack_data)
 
-def register(socet, data):
+def register(socket, data):
     unpack_data = washer_pb2.Register_Request()
     unpack_data.ParseFromString(data)
 
@@ -95,14 +96,15 @@ def register(socet, data):
 
     now = int(time.time())
     filter = {"phone":phone}
-    washer = Washer.find_one(filter);
+    washer = Washer.find_one(filter)
+    washer_mix = Washer_Mix.find_one(filter)
     
     if washer is not None:
         pack_data.error_code = washer_pb2.ERROR_WASHER_EXIST
         common.send(socket, washer_pb2.REGISTER, pack_data)
         print 'washer exist'
         return
-    washer_mix is None or washer_mix['authcode'] != authcode:
+    elif washer_mix is None or washer_mix['authcode'] != authcode:
         pack_data.error_code = washer_pb2.ERROR_AUTHCODE_INVALID
         common.send(socket, washer_pb2.REGISTER, pack_data)
         print 'authcode invalid'
@@ -148,7 +150,7 @@ def verify_authcode(socket, data):
     phone_number = phonenumbers.parse(phone, "CN")
     pack_data = washer_pb2.Verify_Authcode_Response()
 
-    if not phonenumbers.is_valid_number(phone_number)
+    if not phonenumbers.is_valid_number(phone_number):
         pack_data.error_code = washer_pb2.ERROR_PHONE_INVALID
         common.send(socket, washer_pb2.VERIFY_AUTHCODE, pack_data)
         print 'phone invalid'
@@ -162,7 +164,7 @@ def verify_authcode(socket, data):
     if washer_mix is None or washer_mix['authcode'] != authcode:
         pack_data.error_code = washer_pb2.ERROR_AUTHCODE_INVALID
         common.send(socket, washer_pb2.VERIFY_AUTHCODE, pack_data)
-        print 'authcode invalid:%s' %s (authcode)
+        print 'authcode invalid:%s' % (authcode)
         return
     elif washer_mix['expired'] < int(time.time()):
         pack_data.error_code = washer_pb2.ERROR_AUTHCODE_EXPIRED
@@ -216,15 +218,16 @@ def request_authcode(socket, data):
                 "update_time": now
             }
         }
-        res = washer_mix.update_one(filter, doc)
+        res = Washer_Mix.update_one(filter, doc)
         print 'update authcode:%s' % (res)
 
     authcode = authcode or washer_mix['authcode']
     pack_data.authcode = authcode
     pack_data.error_code = washer_pb2.SUCCESS
+    print pack_data
     common.send(socket, washer_pb2.REQUEST_AUTHCODE, pack_data)
-    text =  "【趣游泳】您的验证码是是" + str(authcode)
-    response = helper.send_sms(text, phone[3:])
+    #text =  "【趣游泳】您的验证码是是" + str(authcode)
+    #response = helper.send_sms(text, phone[3:])
 
 def fresh_location(socket, data):
     unpack_data = washer_pb2.Fresh_Location_Request()
