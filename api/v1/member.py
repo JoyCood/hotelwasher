@@ -25,6 +25,7 @@ def handle(socket, protocol, data):
     fun = getattr(sys.modules[__name__], handler)
     fun(socket, data)
 
+#登录
 def login(socket, data):
     unpack_data = member_pb2.Login_Reqeust()
     unpack_data.ParseFromString(data)
@@ -37,9 +38,7 @@ def login(socket, data):
     md5.update(password)
     password = md5.hexdigest()
 
-    phone_number = phonenumbers.parse(phone, "CN")
-
-    if not phonenumbers.is_valid_number(phone_number):
+    if not helper.verify_phone(phone):
         pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
         common.send(socket, member_pb2.LOGIN, pack_data)
         print 'phone invalid'
@@ -65,6 +64,7 @@ def login(socket, data):
     common.send(socket, member_pb2.LOGIN, pack_data)
     print 'login success'
 
+#注册
 def register(socket, data):
     unpack_data = member_pb2.Register_Request()
     unpack_data.ParseFromString(data)
@@ -75,8 +75,6 @@ def register(socket, data):
     confirm_password = unpack_data.confirm_password.strip()
     authcode = unpack_data.authcode
 
-    phone_number = phonenumbers.parse(phone, "CN")
-
     pack_data = member_pb2.Register_Response()
     
     if password != confirm_password:
@@ -84,7 +82,7 @@ def register(socket, data):
         common.send(socket, member_pb2.REGISTER, pack_data)
         print 'password not equal'
         return
-    elif not phonenumbers.is_valid_number(phone_number):
+    elif not helper.verify_phone(phone):
         pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
         common.send(socket, member_pb2.REGISTER, pack_data)
         print 'phone invalid'
@@ -134,17 +132,16 @@ def register(socket, data):
         common.send(socket, member_pb2.REGISTER, pack_data)
         print 'duplicate key error, member exist'
 
-
+#验证码校验
 def verify_authcode(socket, data):
     unpack_data = member_pb2.Verify_Authcode_Request()
     unpack_data.ParseFromString(data)
     phone = unpack_data.phone.strip()
     authcode = unpack_data.authcode
     
-    phone_number = phonenumbers.parse(phone, "CN")
     pack_data = member_pb2.Verify_Authcode_Response()
 
-    if not phonenumbers.is_valid_number(phone_number):
+    if not helper.verify_phone(phone):
         pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
         common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
         return
@@ -168,16 +165,16 @@ def verify_authcode(socket, data):
     common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
     print 'verify authcode success'
 
+#请求验证码
 def request_authcode(socket, data):
     unpack_data = member_pb2.Request_Authcode_Request()
     unpack_data.ParseFromString(data)
 
     phone = unpack_data.phone.strip()
     
-    phone_number = phonenumbers.parse(phone, "CN")
     pack_data = member_pb2.Request_Authcode_Response()
 
-    if not phonenumbers.is_valid_number(phone_number):
+    if not helper.verify_phone(phone):
         pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
         common.send(socket, member_pb2.REQUEST_AUTHCODE, pack_data)
         print 'phone invalid'
@@ -213,8 +210,9 @@ def request_authcode(socket, data):
         print 'update authcode:%s' % (res)
 
     authcode = authcode or member_mix['authcode']
+
+    pack_data.authcode   = authcode
     pack_data.error_code = member_pb2.SUCCESS
-    pack_data.authcode = authcode
 
     common.send(socket,member_pb2.REQUEST_AUTHCODE, pack_data)
     text = "【趣游泳】您的验证码是是" + str(authcode)  

@@ -41,7 +41,7 @@ message Order {
     optional float  discount      = 14;
 }
 
-message Guest_Place_Order_Request {
+message Place_Order_Request {
     required string phone      = 1;
     required int32  authcode   = 2;
     required int32  type       = 3;
@@ -51,21 +51,7 @@ message Guest_Place_Order_Request {
     optional string address    = 7;
 }
 
-message Guest_Place_Order_Response {
-    optional Washer washer = 1;
-    required Error_Code error_code = 2;
-}
-
-message Member_Place_Order_Request {
-   required string phone     = 1;
-   required int32  type      = 2;
-   required int32  total     = 3;
-   required float  longitude = 4;
-   required float  latitude  = 5;
-   optional string address   = 6;
-}
-
-message Member_Place_Order_Response {
+message Place_Order_Response {
     optional Washer washer = 1;
     required Error_Code error_code = 2;
 }

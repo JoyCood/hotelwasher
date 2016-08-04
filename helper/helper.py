@@ -4,7 +4,8 @@ from config import base
 
 import httplib
 import urllib
-import json
+
+import phonenumbers
 
 def send_sms(text, mobile):
     params = {'apikey':base.YUNPIAN_API_KEY, 'text':text, 'mobile':mobile}
@@ -16,4 +17,12 @@ def send_sms(text, mobile):
     response_str = response.read()
     conn.close()
     return response_str
+
+def verify_phone(phone, country='CN'):
+    try:
+        phone_number = phonenumbers.parse(phone, country)
+    except phonenumbers.NumberParseException:
+        return False
+    return phonenumbers.is_valid_number(phone_number)
+        
 

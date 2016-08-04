@@ -8,9 +8,14 @@ from config import (mapper, base)
 from helper import helper
 from bson.objectid import ObjectId 
 from pymongo.errors import DuplicateKeyError
+from server import (
+        add_online_washer, 
+        get_online_washer, 
+        get_online_washer_by_socket)
+
+from redis.exceptions import ResponseError
 
 import common
-import phonenumbers
 
 import sys
 import hashlib
@@ -26,27 +31,31 @@ def handle(socket, protocol, data):
     fun(socket, data)
 
 def login(socket, data):
-    unpack_data = washer_pb2.Login_Reqeust()
+    unpack_data = washer_pb2.Login_Request()
     unpack_data.ParseFromString(data)
 
     phone = unpack_data.phone.strip()
     password = unpack_data.password.strip()
-    
+
     washer_id = unpack_data.washer_id.strip()
     signature = unpack_data.signature.strip()
+    
+    md5 = hashlib.md5()
+    md5.update(password)
+    password = md5.hexdigest();
 
-    phone_number = phonenumbers.parse(phone, "CN")
-    if not phonenumbers.is_valid_number(phone_number):
+    pack_data = washer_pb2.Login_Response()
+    
+    if not helper.verify_phone(phone):
         pack_data.error_code = washer_pb2.ERROR_PHONE_INVALID
         common.send(socket, washer_pb2.LOGIN, pack_data)
         print 'phone invalid'
         return
-
     filter = {
         "phone": phone        
     }
 
-    wahser = Washer.find_one(filter)
+    washer = Washer.find_one(filter)
     if washer is None:
         pack_data.error_code = washer_pb2.ERROR_WASHER_NOT_FOUND
         common.send(socket, washer_pb2.LOGIN, pack_data)
@@ -68,19 +77,23 @@ def login(socket, data):
     pack_data.washer.status = washer['status']
     pack_data.error_code = washer_pb2.SUCCESS
     common.send(socket, washer_pb2.LOGIN, pack_data)
+    washer['socket'] = socket
+    add_online_washer(washer)
 
 def register(socket, data):
     unpack_data = washer_pb2.Register_Request()
     unpack_data.ParseFromString(data)
 
-    nick     = unpack_data.nick.strip()
-    phone    = unpack_data.phone.strip()
+    nick  = unpack_data.nick.strip()
+    phone = unpack_data.phone.strip()
+    avatar_small = unpack_data.avatar_small.strip()
+    avatar_mid   = unpack_data.avatar_mid.strip()
+    avatar_big   = unpack_data.avatar_big.strip()
     password = unpack_data.password.strip()
     confirm_password = unpack_data.confirm_password.strip()
     authcode = unpack_data.authcode
     signature = unpack_data.signature.strip()
 
-    phone_number = phonenumbers.parse(phone, "CN")
     pack_data = washer_pb2.Register_Response()
 
     if password != confirm_password:
@@ -88,7 +101,7 @@ def register(socket, data):
         common.send(socket, washer_pb2.REGISTER, pack_data)
         print 'password not equal'
         return
-    elif not phonenumbers.is_valid_number(phone_number):
+    elif not helper.verify_phone(phone):
         pack_data.error_code = washer_pb2.ERROR_PHONE_INVALID
         common.send(socket, washer_pb2.REGISTER, pack_data)
         print 'phone invalid'
@@ -122,6 +135,9 @@ def register(socket, data):
         "nick": nick,        
         "phone": phone,
         "password": password,
+        "avatar_small": avatar_small,
+        "avatar_mid": avatar_mid,
+        "avatar_big": avatar_big,
         "status": 0,
         "reg_time": now,
         "last_login": now,
@@ -147,10 +163,9 @@ def verify_authcode(socket, data):
     authcode = unpack_data.authcode
     signature = unpack_data.signature.strip()
 
-    phone_number = phonenumbers.parse(phone, "CN")
     pack_data = washer_pb2.Verify_Authcode_Response()
 
-    if not phonenumbers.is_valid_number(phone_number):
+    if not helper.verify_phone(phone):
         pack_data.error_code = washer_pb2.ERROR_PHONE_INVALID
         common.send(socket, washer_pb2.VERIFY_AUTHCODE, pack_data)
         print 'phone invalid'
@@ -183,10 +198,9 @@ def request_authcode(socket, data):
     phone = unpack_data.phone.strip()
     signature = unpack_data.signature.strip()
 
-    phone_number = phonenumbers.parse(phone, "CN")
     pack_data = washer_pb2.Request_Authcode_Response()
 
-    if not phonenumbers.is_valid_number(phone_number):
+    if not helper.verify_phone(phone):
         pack_data.error_code = washer_pb2.ERROR_PHONE_INVALID
         common.send(socket, washer_pb2.REQUEST_AUTHCODE, pack_data)
         print 'phone invalid'
@@ -233,23 +247,43 @@ def fresh_location(socket, data):
     unpack_data = washer_pb2.Fresh_Location_Request()
     unpack_data.ParseFromString(data)
 
-    washer_id = unpack_data.washer_id.strip()
+    city      = unpack_data.city.strip()
     longitude = unpack_data.longitude
     latitude  = unpack_data.latitude
-    signature = unpack_data.signature.strip()
+   
+    washer = get_online_washer_by_socket(socket)
+
+    md5 = hashlib.md5() 
+    md5.update(city)
+    city = md5.hexdigest()
 
     pack_data = washer_pb2.Fresh_Location_Response()
     
-    filter = {"_id": ObjectId(washer_id)}
-    doc = {
-        "$set":{
-            "coordinate": [longitude, latitude]
-        }        
-    }
-    res = Washer.update_one(filter, doc)
-    if res.modified_count > 0:
+    exploder = ' '
+    cmd = ['GEOADD ']
+    cmd.append(city)
+    cmd.append(str(longitude))
+    cmd.append(str(latitude))
+    cmd.append(washer['phone'])
+    cmd = exploder.join(cmd)
+    
+    try:
+        common.redis.execute_command(cmd)
         pack_data.error_code = washer_pb2.SUCCESS
-        common.send(socket, washer_pb2.FRESH_LOCATION, pack_data)
-    else:
-        pack_data.error_code = washer_pb2.ERROR_UPDATE_FAILURE
-        common.send(socket, washer_pb2.FRESH_LOCATION, pack_data)
+        common.send(socket, washer_pb2.FRESH_LOCATION_REQUEST, pack_data)
+    except ResponseError as e:
+        print e
+        pack_data.error_code = washer_pb2.ERROR_FRESH_LOCATION_FAILURE
+        common.send(socket, washer_pb2.FRESH_LOCATION_REQUEST, pack_data)
+        return
+
+def find_near_washer(city, longitude, latitude):
+    explode = ' '
+    cmd = ['GEORADIUS']
+    cmd.append(city)
+    cmd.append(str(longitude))
+    cmd.append(str(latitude))
+    cmd.append('3 km WITHCOORD')
+    cmd = exploder.join(cmd)
+
+    return common.redis.execute_command(cmd)

@@ -28,7 +28,7 @@ message Washer {
     optional string avatar_small = 4;
     optional string avatar_mid   = 5;
     optional string avatar_big   = 6;
-    optional string level        = 7;
+    optional float  level        = 7;
     optional int32  reg_time     = 8;
     optional int32  last_login   = 9;
     optional int32  status       = 10;
@@ -62,11 +62,12 @@ message Register_Response {
     required Error_Code error_code = 3;
 }
 
-message Login_Reqeust {
+message Login_Request {
     required string phone     = 1;
-    required int32  authcode  = 2;
-    required string password  = 3;
-    required string signature = 4;
+    optional string password  = 2;
+    optional string washer_id = 3;
+    optional string signature = 4;
+   
 }
 
 message Login_Response {

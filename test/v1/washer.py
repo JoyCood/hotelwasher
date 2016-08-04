@@ -67,7 +67,19 @@ def register(socket):
         res.ParseFromString(body)
         print res
         print 'finish register'
-    
+
+def login(socket):
+    washer = washer_pb2.Login_Request()
+    washer.phone = WASHER_PHONE
+    washer.password = 'iwasher'
+    washer.signature = 'signature'
+    common.send(socket, washer_pb2.LOGIN, washer)
+    body = common.get(socket)
+    if body:
+        washerResponse = washer_pb2.Login_Response()
+        washerResponse.ParseFromString(body)
+        print washerResponse
+
 if __name__ == '__main__':
     filepath = os.path.realpath(__file__)
     sys.path.append(os.path.dirname(os.path.realpath(__file__))[:-8])

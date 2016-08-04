@@ -23,24 +23,49 @@ def handle(socket, protocol, data):
     fun(socket, data)
 
 def place_order(socket, data):
-    unpack_data = Place_Order_Request()
+    unpack_data = order_pb2.Place_Order_Request()
     unpack_data.ParseFromString(data)
 
-    phone     = unpack_data.phone.strip()
-    secret    = unpack_data.secret.strip()
-    type      = unpack_data.type
-    total     = unpack_data.total
-    longitude = unpack_data.longitude #经度
-    latitude  = unpack_data.latitude  #纬度
-    address   = unpack_data.address.strip()
-    filter = [
-        { "$geonear": {
-            "near": {"type":"Point", "coordinates":[longitude, latitude]},                   "" 
-            "limit": base.WASHER_MAX_RETURN,
-            "maxDistance": base.WASHER_MAX_DISTANCE,
-            "spherical": True,
-            "distanceField": "distance"
-        }}
-    ]
+    phone      = unpack_data.phone.strip()
+    signature  = unpack_data.secret.strip()
+    order_type = unpack_data.type #普通｜专业
+    total      = unpack_data.total
+    city       = unpack_data.city
+    longitude  = unpack_data.longitude #经度
+    latitude   = unpack_data.latitude  #纬度
+    address    = unpack_data.address.strip()
     
+    washers = find_near_washer(city, longitude, latitude)
+    
+    size = len(washers)
+    
+    if size:
+        index = random.randint(0, size)
+        washer = washers[index]
+        redis.zrem(city, washer)
+        pack_data.washer.id = washer['id']
+        pack_data.washer.phone = washer['nick']
+        pack_data.washer.level = washer['level']
+        pack_data.washer.longitude = washer['longitude']
+        pack_data.washer.latitude = washer['latitude']
+        doc = {
+            "phone": phone,
+            "washer_id": washer['nick'],
+            "total": total,
+            "city": city,
+            "address": address,
+            "type": type,
+            "create_time": now,
+            "status": 0
+        }
+        Order.insert_one()
+        common.send(socket, washer_pb2.Place_Order_Request, pack_data)
+        return
+
+    pack_data.error_code = washer_pb2.ERROR_WASHER_NOT_FOUND
+    common.send(socket, washer_pb2.Place_Order_Request, pack_data)
+    
+def history_order(socket, data):
+    unpack_data = order_pb2.History_Order_Request()
+    unpack_data.ParseFromString(data)
 
