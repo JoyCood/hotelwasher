@@ -1,9 +1,9 @@
 enum Protocol {
     UNKNOW_CMD       = 0;
-    LOGIN            = 110000;
-    REGISTER         = 110001;
-    REQUEST_AUTHCODE = 110002;
-    VERIFY_AUTHCODE  = 110003;
+    LOGIN            = 110000; //登录
+    REQUEST_AUTHCODE = 110001; //发送验证码
+    VERIFY_AUTHCODE  = 110002; //校验验证码
+    KICKOUT          = 110003; //踢下线
 }
 
 enum Error_Code {
@@ -15,42 +15,29 @@ enum Error_Code {
     ERROR_PHONE_INVALID      = 110004;
     ERROR_AUTHCODE_EXPIRED   = 110005;
     ERROR_MEMBER_NOT_FOUND   = 110006;
+    ERROR_KICKOUT            = 110007;
+    ERROR_BADREQUEST         = 110008;
 }
 
-message Member {
-    required string id = 1;
-    optional string nick = 2;
-    optional string phone = 3;
-    optional string avatar_small = 4;
-    optional string avatar_mid = 5;
-    optional string avatar_big = 6;
-}
-
-message Register_Request {
-    required string phone = 1;
+message Login_Request {
+    required string phone    = 1;
     required int32  authcode = 2;
-    required string password = 3;
-    required string confirm_password = 4;
-    required string nick = 5;
-}
-
-message Register_Response {
-    optional Member member = 1;
-    required Error_Code error_code = 2;
-}
-
-message Login_Reqeust {
-    required string phone = 1;
-    required string password = 2;
+    required string uuid     = 3;
 }
 
 message Login_Response {
-    optional Member member = 1;
-    required Error_Code error_code = 2;
+    optional string phone  = 1;
+    optional string secret = 2;
+    optional string uuid   = 3;
+    required Error_Code error_code = 4;
+}
+
+message Kickout_Response {
+    required Error_Code error_code = 1;
 }
 
 message Verify_Authcode_Request {
-    required string phone = 1;
+    required string phone    = 1;
     required int32  authcode = 2;
 }
 
@@ -63,6 +50,6 @@ message Request_Authcode_Request {
 }
 
 message Request_Authcode_Response {
-    optional int32 authcode = 1;
+    optional int32 authcode        = 1;
     required Error_Code error_code = 2;
 }

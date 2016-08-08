@@ -247,7 +247,7 @@ def fresh_location(socket, data):
     unpack_data = washer_pb2.Fresh_Location_Request()
     unpack_data.ParseFromString(data)
 
-    city      = unpack_data.city.strip()
+    city      = unpack_data.city.strip().encode('utf-8')
     longitude = unpack_data.longitude
     latitude  = unpack_data.latitude
    
@@ -260,7 +260,7 @@ def fresh_location(socket, data):
     pack_data = washer_pb2.Fresh_Location_Response()
     
     exploder = ' '
-    cmd = ['GEOADD ']
+    cmd = ['GEOADD']
     cmd.append(city)
     cmd.append(str(longitude))
     cmd.append(str(latitude))
@@ -270,12 +270,23 @@ def fresh_location(socket, data):
     try:
         common.redis.execute_command(cmd)
         pack_data.error_code = washer_pb2.SUCCESS
-        common.send(socket, washer_pb2.FRESH_LOCATION_REQUEST, pack_data)
+        common.send(socket, washer_pb2.FRESH_LOCATION, pack_data)
+        print 'fresh_location success'
     except ResponseError as e:
-        print e
+        print('fresh_location failure%s') % (e)
         pack_data.error_code = washer_pb2.ERROR_FRESH_LOCATION_FAILURE
         common.send(socket, washer_pb2.FRESH_LOCATION_REQUEST, pack_data)
         return
+
+#def broadcast_location(phone, longitude, latitude):
+#    washer = get_online_washer(phone)
+#    if washer is None:
+#        return
+#    pack_data.Broadcast_Location_Response()
+#    pack_data.longitude = longitude
+#    pack_data.latitude  = latitude
+#    common.send(washer['socket'], washer_pb2.BROADCAST_LOCATION, pack_data)
+#
 
 def find_near_washer(city, longitude, latitude):
     explode = ' '

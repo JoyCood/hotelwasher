@@ -14,7 +14,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='member.proto',
   package='',
-  serialized_pb='\n\x0cmember.proto\"o\n\x06Member\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04nick\x18\x02 \x01(\t\x12\r\n\x05phone\x18\x03 \x01(\t\x12\x14\n\x0c\x61vatar_small\x18\x04 \x01(\t\x12\x12\n\navatar_mid\x18\x05 \x01(\t\x12\x12\n\navatar_big\x18\x06 \x01(\t\"m\n\x10Register_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\x12\x10\n\x08password\x18\x03 \x02(\t\x12\x18\n\x10\x63onfirm_password\x18\x04 \x02(\t\x12\x0c\n\x04nick\x18\x05 \x02(\t\"M\n\x11Register_Response\x12\x17\n\x06member\x18\x01 \x01(\x0b\x32\x07.Member\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code\"0\n\rLogin_Reqeust\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08password\x18\x02 \x02(\t\"J\n\x0eLogin_Response\x12\x17\n\x06member\x18\x01 \x01(\x0b\x32\x07.Member\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code\":\n\x17Verify_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\";\n\x18Verify_Authcode_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\")\n\x18Request_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\"N\n\x19Request_Authcode_Response\x12\x10\n\x08\x61uthcode\x18\x01 \x01(\x05\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code*f\n\x08Protocol\x12\x0e\n\nUNKNOW_CMD\x10\x00\x12\x0b\n\x05LOGIN\x10\xb0\xdb\x06\x12\x0e\n\x08REGISTER\x10\xb1\xdb\x06\x12\x16\n\x10REQUEST_AUTHCODE\x10\xb2\xdb\x06\x12\x15\n\x0fVERIFY_AUTHCODE\x10\xb3\xdb\x06*\xe6\x01\n\nError_Code\x12\x0b\n\x07SUCCESS\x10\x00\x12\x1c\n\x16\x45RROR_PASSWORD_INVALID\x10\xb0\xdb\x06\x12\x1e\n\x18\x45RROR_PASSWORD_NOT_EQUAL\x10\xb1\xdb\x06\x12\x18\n\x12\x45RROR_MEMBER_EXIST\x10\xb2\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_INVALID\x10\xb3\xdb\x06\x12\x19\n\x13\x45RROR_PHONE_INVALID\x10\xb4\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_EXPIRED\x10\xb5\xdb\x06\x12\x1c\n\x16\x45RROR_MEMBER_NOT_FOUND\x10\xb6\xdb\x06')
+  serialized_pb='\n\x0cmember.proto\">\n\rLogin_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\x12\x0c\n\x04uuid\x18\x03 \x02(\t\"^\n\x0eLogin_Response\x12\r\n\x05phone\x18\x01 \x01(\t\x12\x0e\n\x06secret\x18\x02 \x01(\t\x12\x0c\n\x04uuid\x18\x03 \x01(\t\x12\x1f\n\nerror_code\x18\x04 \x02(\x0e\x32\x0b.Error_Code\"3\n\x10Kickout_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\":\n\x17Verify_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\";\n\x18Verify_Authcode_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\")\n\x18Request_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\"N\n\x19Request_Authcode_Response\x12\x10\n\x08\x61uthcode\x18\x01 \x01(\x05\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code*e\n\x08Protocol\x12\x0e\n\nUNKNOW_CMD\x10\x00\x12\x0b\n\x05LOGIN\x10\xb0\xdb\x06\x12\x16\n\x10REQUEST_AUTHCODE\x10\xb1\xdb\x06\x12\x15\n\x0fVERIFY_AUTHCODE\x10\xb2\xdb\x06\x12\r\n\x07KICKOUT\x10\xb3\xdb\x06*\x93\x02\n\nError_Code\x12\x0b\n\x07SUCCESS\x10\x00\x12\x1c\n\x16\x45RROR_PASSWORD_INVALID\x10\xb0\xdb\x06\x12\x1e\n\x18\x45RROR_PASSWORD_NOT_EQUAL\x10\xb1\xdb\x06\x12\x18\n\x12\x45RROR_MEMBER_EXIST\x10\xb2\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_INVALID\x10\xb3\xdb\x06\x12\x19\n\x13\x45RROR_PHONE_INVALID\x10\xb4\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_EXPIRED\x10\xb5\xdb\x06\x12\x1c\n\x16\x45RROR_MEMBER_NOT_FOUND\x10\xb6\xdb\x06\x12\x13\n\rERROR_KICKOUT\x10\xb7\xdb\x06\x12\x16\n\x10\x45RROR_BADREQUEST\x10\xb8\xdb\x06')
 
 _PROTOCOL = _descriptor.EnumDescriptor(
   name='Protocol',
@@ -31,22 +31,22 @@ _PROTOCOL = _descriptor.EnumDescriptor(
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='REGISTER', index=2, number=110001,
+      name='REQUEST_AUTHCODE', index=2, number=110001,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='REQUEST_AUTHCODE', index=3, number=110002,
+      name='VERIFY_AUTHCODE', index=3, number=110002,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='VERIFY_AUTHCODE', index=4, number=110003,
+      name='KICKOUT', index=4, number=110003,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=689,
-  serialized_end=791,
+  serialized_start=473,
+  serialized_end=574,
 )
 
 Protocol = enum_type_wrapper.EnumTypeWrapper(_PROTOCOL)
@@ -88,19 +88,27 @@ _ERROR_CODE = _descriptor.EnumDescriptor(
       name='ERROR_MEMBER_NOT_FOUND', index=7, number=110006,
       options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ERROR_KICKOUT', index=8, number=110007,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ERROR_BADREQUEST', index=9, number=110008,
+      options=None,
+      type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=794,
-  serialized_end=1024,
+  serialized_start=577,
+  serialized_end=852,
 )
 
 Error_Code = enum_type_wrapper.EnumTypeWrapper(_ERROR_CODE)
 UNKNOW_CMD = 0
 LOGIN = 110000
-REGISTER = 110001
-REQUEST_AUTHCODE = 110002
-VERIFY_AUTHCODE = 110003
+REQUEST_AUTHCODE = 110001
+VERIFY_AUTHCODE = 110002
+KICKOUT = 110003
 SUCCESS = 0
 ERROR_PASSWORD_INVALID = 110000
 ERROR_PASSWORD_NOT_EQUAL = 110001
@@ -109,54 +117,35 @@ ERROR_AUTHCODE_INVALID = 110003
 ERROR_PHONE_INVALID = 110004
 ERROR_AUTHCODE_EXPIRED = 110005
 ERROR_MEMBER_NOT_FOUND = 110006
+ERROR_KICKOUT = 110007
+ERROR_BADREQUEST = 110008
 
 
 
-_MEMBER = _descriptor.Descriptor(
-  name='Member',
-  full_name='Member',
+_LOGIN_REQUEST = _descriptor.Descriptor(
+  name='Login_Request',
+  full_name='Login_Request',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='id', full_name='Member.id', index=0,
+      name='phone', full_name='Login_Request.phone', index=0,
       number=1, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='nick', full_name='Member.nick', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
+      name='authcode', full_name='Login_Request.authcode', index=1,
+      number=2, type=5, cpp_type=1, label=2,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='phone', full_name='Member.phone', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='avatar_small', full_name='Member.avatar_small', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='avatar_mid', full_name='Member.avatar_mid', index=4,
-      number=5, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='avatar_big', full_name='Member.avatar_big', index=5,
-      number=6, type=9, cpp_type=9, label=1,
+      name='uuid', full_name='Login_Request.uuid', index=2,
+      number=3, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -171,133 +160,7 @@ _MEMBER = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=16,
-  serialized_end=127,
-)
-
-
-_REGISTER_REQUEST = _descriptor.Descriptor(
-  name='Register_Request',
-  full_name='Register_Request',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='phone', full_name='Register_Request.phone', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='authcode', full_name='Register_Request.authcode', index=1,
-      number=2, type=5, cpp_type=1, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='password', full_name='Register_Request.password', index=2,
-      number=3, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='confirm_password', full_name='Register_Request.confirm_password', index=3,
-      number=4, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='nick', full_name='Register_Request.nick', index=4,
-      number=5, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=129,
-  serialized_end=238,
-)
-
-
-_REGISTER_RESPONSE = _descriptor.Descriptor(
-  name='Register_Response',
-  full_name='Register_Response',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='member', full_name='Register_Response.member', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='error_code', full_name='Register_Response.error_code', index=1,
-      number=2, type=14, cpp_type=8, label=2,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=240,
-  serialized_end=317,
-)
-
-
-_LOGIN_REQEUST = _descriptor.Descriptor(
-  name='Login_Reqeust',
-  full_name='Login_Reqeust',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='phone', full_name='Login_Reqeust.phone', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='password', full_name='Login_Reqeust.password', index=1,
-      number=2, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=319,
-  serialized_end=367,
+  serialized_end=78,
 )
 
 
@@ -309,15 +172,29 @@ _LOGIN_RESPONSE = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='member', full_name='Login_Response.member', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='phone', full_name='Login_Response.phone', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='error_code', full_name='Login_Response.error_code', index=1,
-      number=2, type=14, cpp_type=8, label=2,
+      name='secret', full_name='Login_Response.secret', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='uuid', full_name='Login_Response.uuid', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='error_code', full_name='Login_Response.error_code', index=3,
+      number=4, type=14, cpp_type=8, label=2,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -331,8 +208,36 @@ _LOGIN_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=369,
-  serialized_end=443,
+  serialized_start=80,
+  serialized_end=174,
+)
+
+
+_KICKOUT_RESPONSE = _descriptor.Descriptor(
+  name='Kickout_Response',
+  full_name='Kickout_Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='error_code', full_name='Kickout_Response.error_code', index=0,
+      number=1, type=14, cpp_type=8, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=176,
+  serialized_end=227,
 )
 
 
@@ -366,8 +271,8 @@ _VERIFY_AUTHCODE_REQUEST = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=445,
-  serialized_end=503,
+  serialized_start=229,
+  serialized_end=287,
 )
 
 
@@ -394,8 +299,8 @@ _VERIFY_AUTHCODE_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=505,
-  serialized_end=564,
+  serialized_start=289,
+  serialized_end=348,
 )
 
 
@@ -422,8 +327,8 @@ _REQUEST_AUTHCODE_REQUEST = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=566,
-  serialized_end=607,
+  serialized_start=350,
+  serialized_end=391,
 )
 
 
@@ -457,55 +362,39 @@ _REQUEST_AUTHCODE_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=609,
-  serialized_end=687,
+  serialized_start=393,
+  serialized_end=471,
 )
 
-_REGISTER_RESPONSE.fields_by_name['member'].message_type = _MEMBER
-_REGISTER_RESPONSE.fields_by_name['error_code'].enum_type = _ERROR_CODE
-_LOGIN_RESPONSE.fields_by_name['member'].message_type = _MEMBER
 _LOGIN_RESPONSE.fields_by_name['error_code'].enum_type = _ERROR_CODE
+_KICKOUT_RESPONSE.fields_by_name['error_code'].enum_type = _ERROR_CODE
 _VERIFY_AUTHCODE_RESPONSE.fields_by_name['error_code'].enum_type = _ERROR_CODE
 _REQUEST_AUTHCODE_RESPONSE.fields_by_name['error_code'].enum_type = _ERROR_CODE
-DESCRIPTOR.message_types_by_name['Member'] = _MEMBER
-DESCRIPTOR.message_types_by_name['Register_Request'] = _REGISTER_REQUEST
-DESCRIPTOR.message_types_by_name['Register_Response'] = _REGISTER_RESPONSE
-DESCRIPTOR.message_types_by_name['Login_Reqeust'] = _LOGIN_REQEUST
+DESCRIPTOR.message_types_by_name['Login_Request'] = _LOGIN_REQUEST
 DESCRIPTOR.message_types_by_name['Login_Response'] = _LOGIN_RESPONSE
+DESCRIPTOR.message_types_by_name['Kickout_Response'] = _KICKOUT_RESPONSE
 DESCRIPTOR.message_types_by_name['Verify_Authcode_Request'] = _VERIFY_AUTHCODE_REQUEST
 DESCRIPTOR.message_types_by_name['Verify_Authcode_Response'] = _VERIFY_AUTHCODE_RESPONSE
 DESCRIPTOR.message_types_by_name['Request_Authcode_Request'] = _REQUEST_AUTHCODE_REQUEST
 DESCRIPTOR.message_types_by_name['Request_Authcode_Response'] = _REQUEST_AUTHCODE_RESPONSE
 
-class Member(_message.Message):
+class Login_Request(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _MEMBER
+  DESCRIPTOR = _LOGIN_REQUEST
 
-  # @@protoc_insertion_point(class_scope:Member)
-
-class Register_Request(_message.Message):
-  __metaclass__ = _reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _REGISTER_REQUEST
-
-  # @@protoc_insertion_point(class_scope:Register_Request)
-
-class Register_Response(_message.Message):
-  __metaclass__ = _reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _REGISTER_RESPONSE
-
-  # @@protoc_insertion_point(class_scope:Register_Response)
-
-class Login_Reqeust(_message.Message):
-  __metaclass__ = _reflection.GeneratedProtocolMessageType
-  DESCRIPTOR = _LOGIN_REQEUST
-
-  # @@protoc_insertion_point(class_scope:Login_Reqeust)
+  # @@protoc_insertion_point(class_scope:Login_Request)
 
 class Login_Response(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _LOGIN_RESPONSE
 
   # @@protoc_insertion_point(class_scope:Login_Response)
+
+class Kickout_Response(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _KICKOUT_RESPONSE
+
+  # @@protoc_insertion_point(class_scope:Kickout_Response)
 
 class Verify_Authcode_Request(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType

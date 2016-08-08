@@ -1,7 +1,11 @@
 enum Protocol {
-    UNKNOW_CMD  = 0;
-    PLACE_ORDER = 120000;
-    CANCEL_ORDER = 120001;
+    UNKNOW_CMD     = 0;
+    PLACE_ORDER    = 120000;
+    CANCEL_ORDER   = 120001;
+    UNFINISH_ORDER = 120002;
+    ORDER_LIST     = 120003;
+    ORDER_FEEDBACK = 120004;
+    ORDER_PAY      = 120005;
 }
 
 enum Error_Code {
@@ -15,40 +19,61 @@ enum Event {
     OLD = 1; //取老数据   
 }
 
-message Washer {
-    required string id        = 1;
-    required string phone     = 2;
-    required float  longitude = 3;
-    required float  latitude  = 4;
-    optional string nick      = 5;
-    optional float  level     = 6;
+enum Order_Type {
+    NORMAL = 0; //普通洗
+    PROFESSIONAL = 2; //专业洗
 }
 
+enum Order_Status {
+    PLACED      = 0; //未派发
+    DISTRIBUTED = 1; //已派发
+    DELIVERED   = 2; //已取件
+    RESTORED    = 3; //已送回
+    PAYED       = 4; //已支付
+    CANCELED    = 5; //已取消
+    WAIT_PAY    = 6; //待支付
+}
+
+enum Customer_Type {
+    GUEST  = 1;
+    MEMBER = 2;
+}
+
+message Washer {
+    required string id        = 1; //商家id
+    required string phone     = 2; //商家电话
+    required float  longitude = 3; //经度
+    required float  latitude  = 4; //伟度
+    optional string nick      = 5; //昵称
+    optional float  level     = 6; //平均分
+}
+
+
 message Order {
-    required string id            = 1;
-    required string customer      = 2;
-    required string washer        = 3;
-    required float  price         = 4;
-    required int32  order_status  = 5;
-    required int32  order_type    = 6;
-    required int32  order_time    = 7;
-    required int32  customer_type = 8
-    optional int32  pay_from      = 9
-    optional int32  process_time  = 10;
-    optional int32  finish_time   = 11;
-    optional int32  cancel_time   = 12;
-    optional string cancel_by     = 13;
-    optional float  discount      = 14;
+    required string id             = 1; //订单id
+    required string customer       = 2; //客户电话号码
+    required string washer         = 3; //商家id
+    required float  price          = 4; //价格
+    required Order_Status order_status   = 5; //订单状态
+    required int32  order_type     = 6;  //普通洗｜专业洗
+    required int32  order_time     = 7;  //下单时间
+    required Customer_Type  customer_type  = 8
+    required int32  pay_status     = 9;  
+    optional int32  pay_from       = 10;   //支付渠道 [1:支付宝 2:微信]
+    optional string cancel_by      = 11; //取消方 [1:用户取消 2:商家取消]
+    optional float  discount       = 12; //折扣
+    optional int32  feedback       = 13; //已评分 [0:未评分 1:已评分]
+    optional float  score          = 14; //得分
 }
 
 message Place_Order_Request {
-    required string phone      = 1;
-    required int32  authcode   = 2;
-    required int32  type       = 3;
-    required int32  total      = 4;
-    required float  longitude  = 5;
-    required float  latitude   = 6;
-    optional string address    = 7;
+    required int32  order_type = 1; //普通话 ｜ 专业洗
+    required int32  total      = 2; //数量
+    required float  longitude  = 3; //经度
+    required float  latitude   = 4; //纬度
+    optional string phone      = 5; //游客下单时必须提手机号
+    optional int32  authcode   = 6; //游客下单时必须提供验证码
+    optional string address    = 7; //下单所在位置
 }
 
 message Place_Order_Response {

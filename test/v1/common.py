@@ -3,7 +3,7 @@
 
 import os
 import sys
-import socket
+import socket as sysSocket
 import struct
 import inspect
 
@@ -19,12 +19,16 @@ def send(socket, protocol, data):
     return socket.send(packet)
 
 def get(socket):
-    header = socket.recv(12)
-    if header:
-        (body_len, protocol, num) = struct.unpack('>3I', header)
-        if body_len:
-            body = socket.recv(body_len)
-            return body
-    return False
+    try:
+        header = socket.recv(12)
+        if header:
+            (body_len, protocol, num) = struct.unpack('>3I', header)
+            if body_len:
+                body = socket.recv(body_len)
+                return body
+        return False
+    except sysSocket.error:
+        return False
+            
 
 

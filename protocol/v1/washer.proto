@@ -87,10 +87,9 @@ message Verify_Authcode_Response {
 }
 
 message Fresh_Location_Request {
-    required string id        = 1;
-    required string signature = 2;
-    required float  longitude = 3;
-    required float  latitude  = 4; 
+    required string city      = 1; 
+    required float  longitude = 2;
+    required float  latitude  = 3; 
 }
 
 message Fresh_Location_Response {

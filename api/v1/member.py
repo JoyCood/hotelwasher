@@ -8,6 +8,10 @@ from config import (mapper, base)
 from helper import helper
 from bson.objectid import ObjectId 
 from pymongo.errors import DuplicateKeyError
+from server import (
+        get_online_customer_by_phone,
+        add_online_customer,
+)
 
 import common
 import phonenumbers
@@ -25,112 +29,105 @@ def handle(socket, protocol, data):
     fun = getattr(sys.modules[__name__], handler)
     fun(socket, data)
 
-#登录
-def login(socket, data):
+def order_check(socket, data):
     unpack_data = member_pb2.Login_Reqeust()
     unpack_data.ParseFromString(data)
     
-    phone = unpack_data.phone.strip()
-    password = unpack_data.password.strip()
+    phone     = unpack_data.phone.strip()
+    uuid      = unpack_data.uuid.strip()
+    signature = unpack_data.signature.strip()
+    
+    if not helper.verify_phone(phone):
+        pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
+        common.send(socket, member_pb2.LOGIN, pack_data)
+        return
+
+    filter = {"phone":phone}
+    member_mix = Member_Mix.find_one(filter)
+    if member_mix is None:
+        pack_data.error_code = member_pb2.ERROR_SIGNATURE_INVALID
+        common.send(socket, member_pb2.LOGIN, pack_data)
+        return
+    
+    signature2 = [member_mix['secret']]
+    signature2.append(phone)
+    signature2.append(uuid)
+    signature2 = exploder.join(signature2)
+
+    md5 = hashlib.md5()
+    md5.update(signature2)
+    signature2 = md5.hexdigest()
+
+    if signature2 != signature:
+        pack_data.error_code = member_pb2.ERROR_SIGNATURE_INVALID
+        common.send(socket, member_pb2.LOGIN, pack_data)
+        return
+    
+
+            
+#踢出其它已登录帐号
+def __kickout__(phone,socket):
+    customer = get_online_customer_by_phone(phone)
+    if customer and customer['socket'] != socket:
+        print 'customer socket:%s socket2:%s' % (customer['socket'], socket)
+        pack_data = member_pb2.Login_Response()
+        pack_data.error_code = member_pb2.ERROR_KICKOUT
+        common.send(customer['socket'], member_pb2.KICKOUT, pack_data)
+        customer['socket'].close()
+
+#登录
+def login(socket, data):
+    unpack_data = member_pb2.Login_Request()
+    unpack_data.ParseFromString(data)
+
+    phone    = unpack_data.phone.strip();
+    authcode = unpack_data.authcode
+    uuid     = unpack_data.uuid
 
     pack_data = member_pb2.Login_Response()
-    md5 = hashlib.md5()
-    md5.update(password)
-    password = md5.hexdigest()
-
+    
     if not helper.verify_phone(phone):
         pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
         common.send(socket, member_pb2.LOGIN, pack_data)
         print 'phone invalid'
         return
 
-    filter = {
-        "phone": phone
-    }
-    member = Member.find_one(filter)
-    if member is None:
-        pack_data.error_code = member_pb2.ERROR_MEMBER_NOT_FOUND
-        common.send(socket, member_pb2.LOGIN, pack_data)
-        print 'member not found'
-        return
-    elif member['password'] != password:
-        pack_data.error_code = member_pb2.ERROR_PASSWORD_INVALID
-        common.send(socket, member_pb2.LOGIN, pack_data)
-        print 'password invalid'
-        return
-    pack_data.member.id = str(member['_id'])
-    pack_data.member.nick = member['nick']
-    pack_data.error_code = member_pb2.SUCCESS
-    common.send(socket, member_pb2.LOGIN, pack_data)
-    print 'login success'
-
-#注册
-def register(socket, data):
-    unpack_data = member_pb2.Register_Request()
-    unpack_data.ParseFromString(data)
-
-    nick     = unpack_data.nick.strip()
-    phone    = unpack_data.phone.strip();
-    password = unpack_data.password.strip()
-    confirm_password = unpack_data.confirm_password.strip()
-    authcode = unpack_data.authcode
-
-    pack_data = member_pb2.Register_Response()
-    
-    if password != confirm_password:
-        pack_data.error_code = member_pb2.ERROR_PASSWORD_NOT_EQUAL
-        common.send(socket, member_pb2.REGISTER, pack_data)
-        print 'password not equal'
-        return
-    elif not helper.verify_phone(phone):
-        pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
-        common.send(socket, member_pb2.REGISTER, pack_data)
-        print 'phone invalid'
-        return
-
     now    = int(time.time()) 
     filter = {"phone":phone}
-    member = Member.find_one(filter);
+    member_mix = Member_Mix.find_one(filter);
     
-    if member is not None:
-        pack_data.error_code = member_pb2.ERROR_MEMBER_EXIST
-        common.send(socket, member_pb2.REGISTER, pack_data)
-        print 'member exist'
+    if member_mix is None:
+        pack_data.error_code = member_pb2.ERROR_AUTHCODE_INVALID
+        common.send(socket, member_pb2.LOGIN, pack_data)
         return
 
-    member_mix = Member_Mix.find_one(filter)
-
-    if member_mix is None or member_mix['authcode'] != authcode:
+    if member_mix['authcode'] != authcode:
         pack_data.error_code = member_pb2.ERROR_AUTHCODE_INVALID
-        common.send(socket,member_pb2.REGISTER, pack_data)
+        common.send(socket, member_pb2.LOGIN, pack_data)
         print 'authcode invalid'
         return
-    elif member_mix['expired'] < now:
+
+    if member_mix['expired'] < now:
         pack_data.error_code = member_pb2.ERROR_AUTHCODE_EXPIRED
-        common.send(socket, member_pb2.REGISTER, pack_data)
+        common.send(socket, member_pb2.LOGIN, pack_data)
         print 'authcode expired'
         return
+    
+    secret = str(time.time()) +  base.APPKEY + phone + helper.get_random(6) + uuid
     md5 = hashlib.md5()
-    md5.update(password)
-    password = md5.hexdigest()
-    doc = {
-        "nick": nick,
-        "phone": phone,
-        "password": password,
-        "status": 0,
-        "reg_time": now,
-        "last_login": now
-    }
-    try:
-        res = Member.insert_one(doc)
-        pack_data.member.id = str(res.inserted_id)
-        pack_data.error_code = member_pb2.SUCCESS
-        common.send(socket, member_pb2.REGISTER, pack_data)
-        print 'register success'
-    except DuplicateKeyError:
-        pack_data.error_code = member_pb2.ERROR_MEMBER_EXIST
-        common.send(socket, member_pb2.REGISTER, pack_data)
-        print 'duplicate key error, member exist'
+    md5.update(secret)
+    secret = md5.hexdigest()
+
+    filter = {"phone":phone}
+    
+    doc = {"$set":{"secret":secret}} 
+
+    Member_Mix.update_one(filter, doc)
+    pack_data.phone  = phone
+    pack_data.secret = secret
+    pack_data.uuid   = uuid 
+    pack_data.error_code = member_pb2.SUCCESS
+    common.send(socket, member_pb2.LOGIN, pack_data)
 
 #验证码校验
 def verify_authcode(socket, data):
@@ -219,3 +216,10 @@ def request_authcode(socket, data):
     response = helper.send_sms(text, phone[3:])
     print 'request authcode response:%s' % (response)
 
+def get_secret(phone):
+    member = server.get_online_customer_by_phone(phone)
+    if member is None:
+        filter = {"phone":phone}
+        member_mix = Member_Mix.find_one(filter)
+        return member_mix.get('secret')
+    return member.get('secret')

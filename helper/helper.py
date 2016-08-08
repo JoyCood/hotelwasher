@@ -4,6 +4,8 @@ from config import base
 
 import httplib
 import urllib
+import string
+import random
 
 import phonenumbers
 
@@ -25,4 +27,8 @@ def verify_phone(phone, country='CN'):
         return False
     return phonenumbers.is_valid_number(phone_number)
         
+
+def get_random(size):
+    chars = string.ascii_letters + string.digits
+    return ''.join((random.choice(chars) for _ in range(size)))
 

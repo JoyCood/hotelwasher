@@ -12,9 +12,17 @@ WASHER_PHONE = '+8618565389757'
 
 def fresh_location(socket):
     pb = washer_pb2.Fresh_Location_Request()
-    pb.phone = WASHER_PHONE
-    pb.longitude = 21.1
-    pb.latitude = 432.12
+    pb.longitude = 119.8916952
+    pb.latitude = 30.2616855
+    pb.city = u'杭州'
+
+    common.send(socket, washer_pb2.FRESH_LOCATION, pb)
+    body = common.get(socket)
+    if body:
+        resp = washer_pb2.Fresh_Location_Response()
+        resp.ParseFromString(body)
+        print resp
+
 
 def Request_Authcode(socket):
     requestAuthcode = washer_pb2.Request_Authcode_Request()
@@ -79,6 +87,8 @@ def login(socket):
         washerResponse = washer_pb2.Login_Response()
         washerResponse.ParseFromString(body)
         print washerResponse
+        if washerResponse.error_code == washer_pb2.SUCCESS:
+            fresh_location(socket)
 
 if __name__ == '__main__':
     filepath = os.path.realpath(__file__)
