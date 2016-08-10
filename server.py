@@ -52,7 +52,7 @@ def __router__(socket, api, protocol, data):
     model.handle(socket, protocol, data)
 
 def __start_server__():
-    #with daemon.DaemonContext():
+    with daemon.DaemonContext():
         server = Server((base.SERVER_HOST, base.SERVER_PORT), Request_Handler)
         server.serve_forever()
 

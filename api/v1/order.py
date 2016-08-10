@@ -3,10 +3,14 @@
 
 from model.member.main import Member 
 from model.member.mix import Member_Mix
+from model.order.main import Order
 from protocol.v1 import order_pb2
 from config import (mapper, base)
 from bson.objectid import ObjectId 
-from server import(get_online_customer_by_socket)
+from server import(
+        add_online_washer,
+        get_online_washer_by_phone, 
+        get_online_customer_by_socket)
 
 import common
 import phonenumbers
@@ -14,6 +18,7 @@ import phonenumbers
 import sys
 import hashlib
 import time
+import random
 
 def handle(socket, protocol, data):
     handler = mapper.handler.get(protocol)
@@ -26,81 +31,118 @@ def handle(socket, protocol, data):
 def place_order(socket, data):
     unpack_data = order_pb2.Place_Order_Request()
     unpack_data.ParseFromString(data)
-
-    phone      = unpack_data.phone.strip()
-    signature  = unpack_data.secret.strip()
+    
     order_type = unpack_data.type #普通｜专业
-    type       = unpack_data.total
-    city       = unpack_data.city
+    total      = unpack_data.total
+    city       = unpack_data.city.strip().encode('utf-8')
     longitude  = unpack_data.longitude #经度
     latitude   = unpack_data.latitude  #纬度
     address    = unpack_data.address.strip()
+    price = 88 
+    now = int(time.time())
     
-    washers = find_near_washer(city, longitude, latitude)
+    pack_data = order_pb2.Place_Order_Response()
+
+    member = get_online_customer_by_socket(socket)
+
+    washer = washer_allocate(city, longitude, latitude)
     
-    size = len(washers)
-    
-    if size:
-        index = random.randint(0, size)
-        washer = washers[index]
-        redis.zrem(city, washer)
-        pack_data.washer.id = washer['id']
+    if washer:
+        doc = {
+            "customer_phone": '+8618565389757',
+            "washer_phone": washer['phone'],
+            "total": total,
+            "price": price,
+            "order_status": order_pb2.DISTRIBUTED,
+            "order_type": order_type,
+            "place_time": now,
+            "city": city,
+            "address": address,
+            "discount": 0,
+            "cancel_by": 0,
+            "feedback": 0,
+            "score": 0,
+            "longitude": longitude,
+            "latitude": latitude
+        }
+        res = Order.insert_one(doc)
+        pack_data.order_id     = str(res.inserted_id)
+        pack_data.order_type   = order_type
+        pack_data.total        = total
+        pack_data.price        = price
+        pack_data.washer.id    = washer['id']
         pack_data.washer.phone = washer['nick']
         pack_data.washer.level = washer['level']
         pack_data.washer.longitude = washer['longitude']
         pack_data.washer.latitude = washer['latitude']
-        doc = {
-            "phone": phone,
-            "washer_id": washer['nick'],
-            "total": total,
-            "city": city,
-            "address": address,
-            "type": type,
-            "create_time": now,
-            "status": 0
+        pack_data.error_code = order_pb2.SUCCESS
+        
+        customer = {
+                "phone": '+8618565389757', 
+                "order_id": str(res.inserted_id),
+                "longitude": longitude,
+                "latitude": latitude,
+                "order_status": 1
         }
-        Order.insert_one()
-        common.send(socket, washer_pb2.Place_Order_Request, pack_data)
+        
+        washer['customer'] = customer
+        add_online_washer(washer)
+        common.send(socket, order_pb2.PLACE_ORDER, pack_data)
+
+        pack_data = order_pb2.Allocate_Order_Response()
+        pack_data.order_id = str(res.inserted_id)
+        pack_data.customer_phone = '+8618565389757'
+        pack_data.error_code = order_pb2.SUCCESS
+        common.send(washer['socket'], order_pb2.ALLOCATE_ORDER, pack_data)
         return
 
-    pack_data.error_code = washer_pb2.ERROR_WASHER_NOT_FOUND
-    common.send(socket, washer_pb2.Place_Order_Request, pack_data)
+    pack_data.error_code = order_pb2.ERROR_WASHER_NOT_FOUND
+    common.send(socket, order_pb2.PLACE_ORDER, pack_data)
     
+def washer_allocate(city, longitude, latitude):
+    md5 = hashlib.md5()
+    md5.update(city)
+    city = md5.hexdigest()
+
+    exploder = ' '
+    cmd = ['GEORADIUS']
+    cmd.append(city)
+    cmd.append(str(longitude))
+    cmd.append(str(latitude))
+    cmd.append('3 km WITHDIST WITHCOORD')
+    cmd = exploder.join(cmd)
+
+    washers = common.redis.execute_command(cmd)
+
+    if washers is None:
+        return
+
+    size = len(washers)
+    if not size:
+        return
+    
+    index = random.randint(0, size-1)
+    print washers, size,index
+    washer = washers[index]
+
+    phone     = washer[0]
+    distance  = washer[1]
+    longitude = float(washer[2][0])
+    latitude  = float(washer[2][1])
+    
+    #common.redis.zrem(city, phone)
+    print phone 
+    washer = get_online_washer_by_phone(phone)
+
+    washer['customer']  = phone
+    washer['longitude'] = longitude
+    washer['latitude']  = latitude
+
+    return washer
+
 def history_order(socket, data):
     unpack_data = order_pb2.History_Order_Request()
     unpack_data.ParseFromString(data)
-
-def order_check(socket, data):
-    member = get_online_customer_by_socket(socket)
-    if member is None:
-        return
-    
-    pack_data = order_pb2. Order_List_Response()
-    filter = {
-        "customer":member['phone'], 
-        "feedback":0}
-    }
-
-    orders = Order.find(filter)
-     
-    for item in orders:
-        order = pack_data.order.add()
-        order.id = str(item['id'])
-        order.customer = item['customer']
-        order.price = item['price']
-        order.order_status = item['order_status']
-        order.order_type = item['order_type']
-        order.order_time = item['order_time']
-        order.customer_type = item['order_type']
-        
-        if item['washer'] and item['order_status']==order_pb2.DISTRIBUTED and item['cancel_by']==0: #已派发
-            #返回商家信息
-        elif item['order_status']==order_pb2.RESTORED and item['pay_status'] == order_pb2.WAIT_PAY: #未支付
-            #返回订单信息
-        
-
-    if orders:
-        common.send(socket, order_pb2.UNFINISH_ORDER, pack_data)
 
 
 def feedback(socket, data):

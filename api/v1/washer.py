@@ -3,14 +3,15 @@
 
 from model.washer.main import Washer
 from model.washer.mix  import Washer_Mix
-from protocol.v1 import washer_pb2
+from model.order.main  import Order
+from protocol.v1 import (washer_pb2, order_pb2)
 from config import (mapper, base)
 from helper import helper
 from bson.objectid import ObjectId 
 from pymongo.errors import DuplicateKeyError
 from server import (
         add_online_washer, 
-        get_online_washer, 
+        get_online_washer_by_phone, 
         get_online_washer_by_socket)
 
 from redis.exceptions import ResponseError
@@ -30,6 +31,7 @@ def handle(socket, protocol, data):
     fun = getattr(sys.modules[__name__], handler)
     fun(socket, data)
 
+#登录
 def login(socket, data):
     unpack_data = washer_pb2.Login_Request()
     unpack_data.ParseFromString(data)
@@ -37,25 +39,41 @@ def login(socket, data):
     phone = unpack_data.phone.strip()
     password = unpack_data.password.strip()
 
-    washer_id = unpack_data.washer_id.strip()
+    uuid = unpack_data.uuid.strip()
     signature = unpack_data.signature.strip()
-    
-    md5 = hashlib.md5()
-    md5.update(password)
-    password = md5.hexdigest();
 
     pack_data = washer_pb2.Login_Response()
-    
+   
     if not helper.verify_phone(phone):
         pack_data.error_code = washer_pb2.ERROR_PHONE_INVALID
         common.send(socket, washer_pb2.LOGIN, pack_data)
         print 'phone invalid'
         return
+
+    if password:
+        __login__(socket, phone, password)
+        return
+
+    if signature:
+        __reconnect__(socket, phone, uuid, signature)
+        return
+
+    pack_data.error_code = washer_pb2.ERROR_BADREQEUST
+    common.send(socket, washer_pb2.LOGIN, pack_data)
+
+def __login__(socket, phone, password):
+    md5 = hashlib.md5()
+    md5.update(password)
+    password = md5.hexdigest();
+
+    pack_data = washer_pb2.Login_Response()
+
     filter = {
         "phone": phone        
     }
 
     washer = Washer.find_one(filter)
+
     if washer is None:
         pack_data.error_code = washer_pb2.ERROR_WASHER_NOT_FOUND
         common.send(socket, washer_pb2.LOGIN, pack_data)
@@ -66,20 +84,93 @@ def login(socket, data):
         common.send(socket, washer_pb2.LOGIN, pack_data)
         print 'password invalid'
         return 
-    
+
+    secret = make_secret(phone)
     pack_data.washer.id = str(washer['_id'])
     pack_data.washer.nick = washer['nick']
     pack_data.washer.phone = washer['phone']
     pack_data.washer.avatar_small = washer['avatar_small']
-    pack_data.washer.avatar_mid = washer['avatar_mid']
-    pack_data.washer.avatar_big = washer['avatar_big']
     pack_data.washer.level = washer['level']
     pack_data.washer.status = washer['status']
+    pack_data.secret = secret
     pack_data.error_code = washer_pb2.SUCCESS
     common.send(socket, washer_pb2.LOGIN, pack_data)
+
     washer['socket'] = socket
+    washer['id'] = str(washer['_id'])
+    del washer['_id']
     add_online_washer(washer)
 
+def __reconnect__(socket, phone, uuid, signature):
+    pack_data = washer_pb2.Login_Response()
+
+    valid = verify_signature(phone, uuid, signature) 
+   
+    if not valid:
+        pack_data.error_code = washer_pb2.ERROR_SIGNATURE_INVALID
+        common.send(socket, washer_pb2.LOGIN, pack_data)
+        return
+    filter = {"phone":phone}
+    
+    washer = Washer.find_one(filter)
+    if washer is None:
+        pack_data.error_code = washer_pb2.ERROR_WASHER_NOT_FOUND
+        common.send(socket, washer_pb2.LOGIN, pack_data)
+        return 
+    
+    washer['socket'] = socket
+    washer['id'] = str(washer['_id'])
+    del washer['_id']
+
+    add_online_washer(washer)
+
+    secret = make_secret(phone)
+    pack_data.washer.id = str(washer['_id'])
+    pack_data.washer.nick = washer['nick']
+    pack_data.washer.phone = washer['phone']
+    pack_data.washer.avatar_small = washer['avatar_small']
+    pack_data.washer.level = washer['level']
+    pack_data.washer.status = washer['status']
+    pack_data.secret = secret
+    pack_data.error_code = washer_pb2.SUCCESS
+    common.send(socket, washer_pb2.LOGIN, pack_data)
+    sync_order(socket)
+
+def sync_order(socket):
+    washer = get_online_washer_by_socket(socket)
+    filter = {
+            "washer_phone": washer['phone'], 
+            "order_status":{
+                "$neq":order_pb2.RESTORED
+            }
+    }
+    order = Order.find_one(filter)
+
+    pack_data = order_pb2.Sync_Order_Response()
+
+    if order is None:
+        pack_data.error_code = order_pb2.SUCCESS
+        common.send(socket, order_pb2.SYNC_ORDER, pack_data)
+        return
+
+    washer['customer'] = {
+            "phone":order['customer_phone'],
+            "order_id":str(order['_id']),
+            "longitude": order['longitude'],
+            "latitude": order['latitude']
+    }
+
+    add_online_washer(washer)
+
+    pack_data.order_id = str(order['_id'])
+    pack_data.customer_phone = order['customer_phone']
+    pack_data.longitude = order['longitude']
+    pack_data.latitude  = order['latitude']
+    pack_data.error_code = order_pb2.SUCCESS
+
+    common.send(socket, order_pb2.SYNC_ORDER, pack_data)
+        
+#注册
 def register(socket, data):
     unpack_data = washer_pb2.Register_Request()
     unpack_data.ParseFromString(data)
@@ -155,6 +246,7 @@ def register(socket, data):
         common.send(socket, washer_pb2.REGISTER, pack_data)
         print 'duplicate key error, member exist'
 
+#校验验证码
 def verify_authcode(socket, data):
     unpack_data = washer_pb2.Verify_Authcode_Request()
     unpack_data.ParseFromString(data)
@@ -191,6 +283,7 @@ def verify_authcode(socket, data):
     common.send(socket, washer_pb2.VERIFY_AUTHCODE, pack_data)
     print 'verify authcode success'
 
+#发送验证码
 def request_authcode(socket, data):
     unpack_data = washer_pb2.Request_Authcode_Request()
     unpack_data.ParseFromString(data)
@@ -240,10 +333,20 @@ def request_authcode(socket, data):
     pack_data.error_code = washer_pb2.SUCCESS
     print pack_data
     common.send(socket, washer_pb2.REQUEST_AUTHCODE, pack_data)
-    #text =  "【趣游泳】您的验证码是是" + str(authcode)
-    #response = helper.send_sms(text, phone[3:])
+    text =  "【趣游泳】您的验证码是是" + str(authcode)
+    response = helper.send_sms(text, phone[3:])
 
+#更新商家地理位置
 def fresh_location(socket, data):
+    washer = get_online_washer_by_socket(socket)
+    pack_data = washer_pb2.Fresh_Location_Response()
+   
+    #已派单或不在线的商家禁止更新地理位置
+    if washer is None or 'customer' in washer:
+        pack_data.error_code = washer_pb2.SUCCESS
+        common.send(socket, washer_pb2.FRESH_LOCATION, pack_data)
+        return
+
     unpack_data = washer_pb2.Fresh_Location_Request()
     unpack_data.ParseFromString(data)
 
@@ -251,14 +354,10 @@ def fresh_location(socket, data):
     longitude = unpack_data.longitude
     latitude  = unpack_data.latitude
    
-    washer = get_online_washer_by_socket(socket)
-
     md5 = hashlib.md5() 
     md5.update(city)
     city = md5.hexdigest()
 
-    pack_data = washer_pb2.Fresh_Location_Response()
-    
     exploder = ' '
     cmd = ['GEOADD']
     cmd.append(city)
@@ -275,26 +374,94 @@ def fresh_location(socket, data):
     except ResponseError as e:
         print('fresh_location failure%s') % (e)
         pack_data.error_code = washer_pb2.ERROR_FRESH_LOCATION_FAILURE
-        common.send(socket, washer_pb2.FRESH_LOCATION_REQUEST, pack_data)
+        common.send(socket, washer_pb2.FRESH_LOCATION, pack_data)
         return
 
-#def broadcast_location(phone, longitude, latitude):
-#    washer = get_online_washer(phone)
-#    if washer is None:
-#        return
-#    pack_data.Broadcast_Location_Response()
-#    pack_data.longitude = longitude
-#    pack_data.latitude  = latitude
-#    common.send(washer['socket'], washer_pb2.BROADCAST_LOCATION, pack_data)
-#
+#查找附近的商家
+def find_near_washer(socket, data):
+    unpack_data = washer_pb2.Near_Washer_Request()
+    unpack_data.ParseFromString(data)
+    
+    city = unpack_data.city.strip().encode('utf-8')
+    longitude = unpack_data.longitude
+    latitude  = unpack_data.latitude
+    
+    md5 = hashlib.md5()
+    md5.update(city)
+    city = md5.hexdigest()
 
-def find_near_washer(city, longitude, latitude):
-    explode = ' '
+    exploder = ' '
+
     cmd = ['GEORADIUS']
     cmd.append(city)
     cmd.append(str(longitude))
     cmd.append(str(latitude))
-    cmd.append('3 km WITHCOORD')
+    cmd.append('3 km WITHDIST WITHCOORD') #3km内的商家
     cmd = exploder.join(cmd)
+    
+    pack_data = washer_pb2.Near_Washer_Response()
 
-    return common.redis.execute_command(cmd)
+    washers = common.redis.execute_command(cmd)
+
+    for item in washers:
+        phone     = item[0]
+        distance  = item[1]
+        longitude = item[2][0]
+        latitude  = item[2][1]
+
+        washer = get_online_washer_by_phone(phone)
+
+        if washer is None:
+            filter = {"phone":phone}
+            washer = Washer.find_one(filter)
+            if washer is None:
+                continue
+            washer['id'] = str(washer['_id'])
+            del washer['_id']
+
+        washer_tmp = pack_data.washer.add()
+        washer_tmp.id = washer['id']
+        washer_tmp.nick = washer['nick']
+        washer_tmp.phone = washer['phone']
+        washer_tmp.avatar_small = washer['avatar_small']
+        washer_tmp.level = washer['level']
+        washer_tmp.longitude = float(longitude)
+        washer_tmp.latitude = float(latitude)
+    
+    pack_data.error_code = washer_pb2.SUCCESS
+    common.send(socket, washer_pb2.NEAR_WASHER, pack_data)
+
+#生成令牌
+def make_secret(phone):
+    now = time.time()
+    elements = [str(now)]
+    elements.append(base.APPKEY)
+    elements.append(helper.get_random(6))
+    elements.append(phone)
+    secret = ''.join(elements)
+    md5 = hashlib.md5()
+    md5.update(secret)
+    secret = md5.hexdigest()
+    filter = {"phone": phone}
+    update = {"$set":{"secret":secret}}
+    Washer_Mix.update_one(filter, update)
+    return secret
+
+#校验签名是否正确
+def verify_signature(phone, uuid, signature):
+    filter = {"phone":phone}
+    washer_mix = Washer_Mix.find_one(filter)
+    if washer_mix is None:
+        return False
+
+    signature2 = [washer_mix['secret']]
+    signature2.append(base.APPKEY)
+    signature2.append(uuid)
+    signature2.append(phone)
+
+    signature2 = ''.join(signature2)
+    md5 = hashlib.md5()
+    md5.update(signature2)
+    signature2 = md5.hexdigest()
+
+    return signature2 == signature

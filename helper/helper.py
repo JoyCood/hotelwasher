@@ -6,8 +6,11 @@ import httplib
 import urllib
 import string
 import random
+import logging
 
 import phonenumbers
+
+logging.basicConfig(level=logging.DEBUG, format='[%(levelname)s] (%(threadName)-9s) %(message)s')
 
 def send_sms(text, mobile):
     params = {'apikey':base.YUNPIAN_API_KEY, 'text':text, 'mobile':mobile}
@@ -32,3 +35,5 @@ def get_random(size):
     chars = string.ascii_letters + string.digits
     return ''.join((random.choice(chars) for _ in range(size)))
 
+def log(message):
+    logging.debug(message)

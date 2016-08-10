@@ -1,28 +1,30 @@
-enum Protocol {
+enum HWProtocol {
     UNKNOW_CMD       = 0;
     LOGIN            = 110000; //登录
     REQUEST_AUTHCODE = 110001; //发送验证码
-    VERIFY_AUTHCODE  = 110002; //校验验证码
-    KICKOUT          = 110003; //踢下线
+    KICKOUT          = 110002; //踢下线
 }
 
 enum Error_Code {
     SUCCESS = 0;
-    ERROR_PASSWORD_INVALID   = 110000;
-    ERROR_PASSWORD_NOT_EQUAL = 110001;
-    ERROR_MEMBER_EXIST       = 110002;
-    ERROR_AUTHCODE_INVALID   = 110003;
-    ERROR_PHONE_INVALID      = 110004;
-    ERROR_AUTHCODE_EXPIRED   = 110005;
-    ERROR_MEMBER_NOT_FOUND   = 110006;
-    ERROR_KICKOUT            = 110007;
-    ERROR_BADREQUEST         = 110008;
+    ERROR_AUTHCODE_INVALID   = 110001; //验证码不对
+    ERROR_PHONE_INVALID      = 110002; //手机号不对
+    ERROR_AUTHCODE_EXPIRED   = 110003; //验证码过期
+    ERROR_MEMBER_NOT_FOUND   = 110004; //找不到用户
+    ERROR_KICKOUT            = 110005; //被踢下线
+    ERROR_BADREQUEST         = 110006; //参数不对
 }
 
+//登录
+/*
+     当断线重连时传可选项传 uuid, signature,验证码登录时传authcode
+     signature = md5(secret + APPKEY + uuid + phone)
+*/
 message Login_Request {
-    required string phone    = 1;
-    required int32  authcode = 2;
-    required string uuid     = 3;
+    required string phone     = 1;
+    optional int32  authcode  = 2;
+    required string uuid      = 3;
+    optional string signature = 4; 
 }
 
 message Login_Response {
@@ -32,19 +34,12 @@ message Login_Response {
     required Error_Code error_code = 4;
 }
 
+//被踢下线
 message Kickout_Response {
     required Error_Code error_code = 1;
 }
 
-message Verify_Authcode_Request {
-    required string phone    = 1;
-    required int32  authcode = 2;
-}
-
-message Verify_Authcode_Response {
-    required Error_Code error_code = 1;
-}
-
+//发送验证码
 message Request_Authcode_Request {
     required string phone = 1;
 }

@@ -14,11 +14,11 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='member.proto',
   package='',
-  serialized_pb='\n\x0cmember.proto\">\n\rLogin_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\x12\x0c\n\x04uuid\x18\x03 \x02(\t\"^\n\x0eLogin_Response\x12\r\n\x05phone\x18\x01 \x01(\t\x12\x0e\n\x06secret\x18\x02 \x01(\t\x12\x0c\n\x04uuid\x18\x03 \x01(\t\x12\x1f\n\nerror_code\x18\x04 \x02(\x0e\x32\x0b.Error_Code\"3\n\x10Kickout_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\":\n\x17Verify_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\";\n\x18Verify_Authcode_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\")\n\x18Request_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\"N\n\x19Request_Authcode_Response\x12\x10\n\x08\x61uthcode\x18\x01 \x01(\x05\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code*e\n\x08Protocol\x12\x0e\n\nUNKNOW_CMD\x10\x00\x12\x0b\n\x05LOGIN\x10\xb0\xdb\x06\x12\x16\n\x10REQUEST_AUTHCODE\x10\xb1\xdb\x06\x12\x15\n\x0fVERIFY_AUTHCODE\x10\xb2\xdb\x06\x12\r\n\x07KICKOUT\x10\xb3\xdb\x06*\x93\x02\n\nError_Code\x12\x0b\n\x07SUCCESS\x10\x00\x12\x1c\n\x16\x45RROR_PASSWORD_INVALID\x10\xb0\xdb\x06\x12\x1e\n\x18\x45RROR_PASSWORD_NOT_EQUAL\x10\xb1\xdb\x06\x12\x18\n\x12\x45RROR_MEMBER_EXIST\x10\xb2\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_INVALID\x10\xb3\xdb\x06\x12\x19\n\x13\x45RROR_PHONE_INVALID\x10\xb4\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_EXPIRED\x10\xb5\xdb\x06\x12\x1c\n\x16\x45RROR_MEMBER_NOT_FOUND\x10\xb6\xdb\x06\x12\x13\n\rERROR_KICKOUT\x10\xb7\xdb\x06\x12\x16\n\x10\x45RROR_BADREQUEST\x10\xb8\xdb\x06')
+  serialized_pb='\n\x0cmember.proto\"Q\n\rLogin_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x01(\x05\x12\x0c\n\x04uuid\x18\x03 \x02(\t\x12\x11\n\tsignature\x18\x04 \x01(\t\"^\n\x0eLogin_Response\x12\r\n\x05phone\x18\x01 \x01(\t\x12\x0e\n\x06secret\x18\x02 \x01(\t\x12\x0c\n\x04uuid\x18\x03 \x01(\t\x12\x1f\n\nerror_code\x18\x04 \x02(\x0e\x32\x0b.Error_Code\"3\n\x10Kickout_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\":\n\x17Verify_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\";\n\x18Verify_Authcode_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\")\n\x18Request_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\"N\n\x19Request_Authcode_Response\x12\x10\n\x08\x61uthcode\x18\x01 \x01(\x05\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code*g\n\nHWProtocol\x12\x0e\n\nUNKNOW_CMD\x10\x00\x12\x0b\n\x05LOGIN\x10\xb0\xdb\x06\x12\x16\n\x10REQUEST_AUTHCODE\x10\xb1\xdb\x06\x12\x15\n\x0fVERIFY_AUTHCODE\x10\xb2\xdb\x06\x12\r\n\x07KICKOUT\x10\xb3\xdb\x06*\x93\x02\n\nError_Code\x12\x0b\n\x07SUCCESS\x10\x00\x12\x1c\n\x16\x45RROR_PASSWORD_INVALID\x10\xb0\xdb\x06\x12\x1e\n\x18\x45RROR_PASSWORD_NOT_EQUAL\x10\xb1\xdb\x06\x12\x18\n\x12\x45RROR_MEMBER_EXIST\x10\xb2\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_INVALID\x10\xb3\xdb\x06\x12\x19\n\x13\x45RROR_PHONE_INVALID\x10\xb4\xdb\x06\x12\x1c\n\x16\x45RROR_AUTHCODE_EXPIRED\x10\xb5\xdb\x06\x12\x1c\n\x16\x45RROR_MEMBER_NOT_FOUND\x10\xb6\xdb\x06\x12\x13\n\rERROR_KICKOUT\x10\xb7\xdb\x06\x12\x16\n\x10\x45RROR_BADREQUEST\x10\xb8\xdb\x06')
 
-_PROTOCOL = _descriptor.EnumDescriptor(
-  name='Protocol',
-  full_name='Protocol',
+_HWPROTOCOL = _descriptor.EnumDescriptor(
+  name='HWProtocol',
+  full_name='HWProtocol',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -45,11 +45,11 @@ _PROTOCOL = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=473,
-  serialized_end=574,
+  serialized_start=492,
+  serialized_end=595,
 )
 
-Protocol = enum_type_wrapper.EnumTypeWrapper(_PROTOCOL)
+HWProtocol = enum_type_wrapper.EnumTypeWrapper(_HWPROTOCOL)
 _ERROR_CODE = _descriptor.EnumDescriptor(
   name='Error_Code',
   full_name='Error_Code',
@@ -99,8 +99,8 @@ _ERROR_CODE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=577,
-  serialized_end=852,
+  serialized_start=598,
+  serialized_end=873,
 )
 
 Error_Code = enum_type_wrapper.EnumTypeWrapper(_ERROR_CODE)
@@ -138,7 +138,7 @@ _LOGIN_REQUEST = _descriptor.Descriptor(
       options=None),
     _descriptor.FieldDescriptor(
       name='authcode', full_name='Login_Request.authcode', index=1,
-      number=2, type=5, cpp_type=1, label=2,
+      number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -146,6 +146,13 @@ _LOGIN_REQUEST = _descriptor.Descriptor(
     _descriptor.FieldDescriptor(
       name='uuid', full_name='Login_Request.uuid', index=2,
       number=3, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='signature', full_name='Login_Request.signature', index=3,
+      number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -160,7 +167,7 @@ _LOGIN_REQUEST = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=16,
-  serialized_end=78,
+  serialized_end=97,
 )
 
 
@@ -208,8 +215,8 @@ _LOGIN_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=80,
-  serialized_end=174,
+  serialized_start=99,
+  serialized_end=193,
 )
 
 
@@ -236,8 +243,8 @@ _KICKOUT_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=176,
-  serialized_end=227,
+  serialized_start=195,
+  serialized_end=246,
 )
 
 
@@ -271,8 +278,8 @@ _VERIFY_AUTHCODE_REQUEST = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=229,
-  serialized_end=287,
+  serialized_start=248,
+  serialized_end=306,
 )
 
 
@@ -299,8 +306,8 @@ _VERIFY_AUTHCODE_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=289,
-  serialized_end=348,
+  serialized_start=308,
+  serialized_end=367,
 )
 
 
@@ -327,8 +334,8 @@ _REQUEST_AUTHCODE_REQUEST = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=350,
-  serialized_end=391,
+  serialized_start=369,
+  serialized_end=410,
 )
 
 
@@ -362,8 +369,8 @@ _REQUEST_AUTHCODE_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=393,
-  serialized_end=471,
+  serialized_start=412,
+  serialized_end=490,
 )
 
 _LOGIN_RESPONSE.fields_by_name['error_code'].enum_type = _ERROR_CODE

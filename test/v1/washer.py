@@ -8,7 +8,7 @@ import inspect
 import common
 
 
-WASHER_PHONE = '+8618565389757'
+WASHER_PHONE = '+8613533332421'
 
 def fresh_location(socket):
     pb = washer_pb2.Fresh_Location_Request()
@@ -23,8 +23,22 @@ def fresh_location(socket):
         resp.ParseFromString(body)
         print resp
 
+def get_near_washer(socket):
+    pb = washer_pb2.Near_Washer_Request()
+    pb.city = u'杭州'
+    pb.longitude = 119.8916952
+    pb.latitude  = 30.2616855
+    common.send(socket, washer_pb2.NEAR_WASHER, pb)
+    body = common.get(socket)
+    if body:
+        resp = washer_pb2.Near_Washer_Response()
+        resp.ParseFromString(body)
+        print resp
+        #for washer in resp.washer:
+        #    print "------------"
+        #    print washer.phone
 
-def Request_Authcode(socket):
+def request_authcode(socket):
     requestAuthcode = washer_pb2.Request_Authcode_Request()
     requestAuthcode.phone = WASHER_PHONE
     requestAuthcode.signature = 'signature'
@@ -54,7 +68,7 @@ def verify_authcode(socket,authcode):
 
 
 def register(socket):
-    authcode = Request_Authcode(socket)
+    authcode = request_authcode(socket)
     if not authcode:
         print 'get authcode failure'
         return

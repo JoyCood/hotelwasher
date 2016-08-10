@@ -1,10 +1,11 @@
-enum Protocol {
+enum HWProtocol {
     UNKNOW_CMD       = 0;
     REGISTER         = 130000; //注册
     LOGIN            = 130001; //登录
     REQUEST_AUTHCODE = 130002; //请求验证码
     VERIFY_AUTHCODE  = 130003; //验证手机号
     FRESH_LOCATION   = 130004; //更新位置
+    NEAR_WASHER      = 130005; //附近的商家
 }
 
 enum Error_Code {
@@ -14,11 +15,12 @@ enum Error_Code {
     ERROR_WASHER_EXIST       = 130002; //商家已存在
     ERROR_AUTHCODE_INVALID   = 130003; //验证码不对
     ERROR_AUTHCODE_EXPIRED   = 130004; //验证码过期
-    ERROR_PHONE_INVALID      = 130005; //非法手机号
+    ERROR_PHONE_INVALID      = 130005; //无效手机号
     ERROR_WASHER_NOT_FOUND   = 130006; //找不到商家
     ERROR_SIGNATURE_EXPIRED  = 130007; //签名过期
     ERROR_SIGNATURE_INVALID  = 130008; //签名错误
     ERROR_KICKOUT            = 130009; //踢下线 
+    ERROR_BADREQEUST         = 130010; //非法请求
 }
 
 message Washer {
@@ -32,6 +34,9 @@ message Washer {
     optional int32  reg_time     = 8;
     optional int32  last_login   = 9;
     optional int32  status       = 10;
+    optional float  distance     = 11;
+    optional float  longitude    = 12;
+    optional float  latitude     = 13;
 }
 
 message Request_Authcode_Request {
@@ -65,9 +70,8 @@ message Register_Response {
 message Login_Request {
     required string phone     = 1;
     optional string password  = 2;
-    optional string washer_id = 3;
+    optional string uuid      = 3;
     optional string signature = 4;
-   
 }
 
 message Login_Response {
@@ -94,4 +98,15 @@ message Fresh_Location_Request {
 
 message Fresh_Location_Response {
     required Error_Code error_code = 1;
+}
+
+message Near_Washer_Request {
+    required string city = 1;
+    required float  longitude = 2;
+    required float  latitude = 3;
+}
+
+message Near_Washer_Response {
+    repeated Washer washer = 1;
+    required Error_Code error_code = 2;
 }

@@ -3,14 +3,17 @@
 
 from model.member.main import Member
 from model.member.mix  import Member_Mix
-from protocol.v1 import member_pb2
+from model.order.main import Order
+from protocol.v1 import (member_pb2, order_pb2)
 from config import (mapper, base)
 from helper import helper
 from bson.objectid import ObjectId 
 from pymongo.errors import DuplicateKeyError
 from server import (
         get_online_customer_by_phone,
+        get_online_customer_by_socket,
         add_online_customer,
+        get_online_washer_by_phone
 )
 
 import common
@@ -28,43 +31,7 @@ def handle(socket, protocol, data):
         return
     fun = getattr(sys.modules[__name__], handler)
     fun(socket, data)
-
-def order_check(socket, data):
-    unpack_data = member_pb2.Login_Reqeust()
-    unpack_data.ParseFromString(data)
     
-    phone     = unpack_data.phone.strip()
-    uuid      = unpack_data.uuid.strip()
-    signature = unpack_data.signature.strip()
-    
-    if not helper.verify_phone(phone):
-        pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
-        common.send(socket, member_pb2.LOGIN, pack_data)
-        return
-
-    filter = {"phone":phone}
-    member_mix = Member_Mix.find_one(filter)
-    if member_mix is None:
-        pack_data.error_code = member_pb2.ERROR_SIGNATURE_INVALID
-        common.send(socket, member_pb2.LOGIN, pack_data)
-        return
-    
-    signature2 = [member_mix['secret']]
-    signature2.append(phone)
-    signature2.append(uuid)
-    signature2 = exploder.join(signature2)
-
-    md5 = hashlib.md5()
-    md5.update(signature2)
-    signature2 = md5.hexdigest()
-
-    if signature2 != signature:
-        pack_data.error_code = member_pb2.ERROR_SIGNATURE_INVALID
-        common.send(socket, member_pb2.LOGIN, pack_data)
-        return
-    
-
-            
 #踢出其它已登录帐号
 def __kickout__(phone,socket):
     customer = get_online_customer_by_phone(phone)
@@ -80,9 +47,10 @@ def login(socket, data):
     unpack_data = member_pb2.Login_Request()
     unpack_data.ParseFromString(data)
 
-    phone    = unpack_data.phone.strip();
-    authcode = unpack_data.authcode
-    uuid     = unpack_data.uuid
+    phone     = unpack_data.phone.strip();
+    authcode  = unpack_data.authcode
+    uuid      = unpack_data.uuid
+    signature = unpack_data.signature.strip()
 
     pack_data = member_pb2.Login_Response()
     
@@ -91,8 +59,93 @@ def login(socket, data):
         common.send(socket, member_pb2.LOGIN, pack_data)
         print 'phone invalid'
         return
+    if authcode:
+        __login__(socket, phone, authcode, uuid)
+        return
+    __reconnect__(socket, phone, uuid, signature)
 
-    now    = int(time.time()) 
+#重连
+def __reconnect__(socket, phone, uuid, signature):
+    pack_data =  member_pb2.Login_Response()
+
+    valid = verify_signature(phone, uuid, signature)
+    if not valid:
+        pack_data.error_code = member_pb2.ERROR_SIGNATURE_INVALID
+        common.send(socket, member_pb2.LOGIN, pack_data)
+        return
+
+    __kickout__(phone, socket)
+    
+    filter = {"phone":phone}
+    member_mix = Member_Mix.find_one(filter)
+
+    customer = {
+        "id": str(member_mix['_id']),
+        "phone": member_mix['phone'],
+        "socket": socket
+    }
+
+    add_online_customer(customer)
+
+    pack_data.phone = phone
+    pack_data.uuid  = uuid
+    pack_data.secret = member_mix['secret']
+    pack_data.error_code = member_pb2.SUCCESS
+    common.send(socket, member_pb2.LOGIN, pack_data)
+    sync_order(socket)
+
+#同步未完成的订单
+def sync_order(socket):
+    customer = get_online_customer_by_socket(socket)
+    filter = {"customer_phone":customer['phone'], "feedback":0}
+         
+    order = Order.find_one(filter)
+
+    pack_data = order_pb2.Sync_Customer_Order_Response()
+
+    if order is None:
+        pack_data.error_code = order_pb2.SUCCESS
+        common.send(socket, order_pb2.SYNC_ORDER, pack_data)
+        return
+    
+    washer = get_online_washer_by_phone(order['washer_phone'])
+    
+    if washer is None:
+        filter = {"phone":order['washer_phone']}
+        washer = Washer.find_one(filter)
+        if washer is not None:
+            washer['id'] = str(washer['_id'])
+            del washer['_id']
+
+    customer['washer'] = {
+        "phone": order['washer_phone'],
+        "nick": washer['nick'],
+        "level": washer['level'],
+        "order_id": str(order['_id'])
+    }
+    
+    add_online_customer(customer)
+
+    pack_data.order_id     = str(order['_id'])
+    pack_data.total        = order['total']
+    pack_data.price        = order['price']
+    pack_data.order_type   = order['order_type']
+    pack_data.washer.id    = washer['id']
+    pack_data.washer.phone = washer['phone']
+    pack_data.washer.nick  = washer['nick']
+    pack_data.washer.level = washer['level']
+    pack_data.error_code = order_pb2.SUCCESS
+
+    print 'get not finish order:'
+    print pack_data
+    common.send(socket, order_pb2.SYNC_ORDER, pack_data)
+
+#通过验证码登录
+def __login__(socket, phone, authcode, uuid):
+    pack_data = member_pb2.Login_Response()
+
+    now = int(time.time()) 
+    
     filter = {"phone":phone}
     member_mix = Member_Mix.find_one(filter);
     
@@ -112,56 +165,26 @@ def login(socket, data):
         common.send(socket, member_pb2.LOGIN, pack_data)
         print 'authcode expired'
         return
-    
-    secret = str(time.time()) +  base.APPKEY + phone + helper.get_random(6) + uuid
-    md5 = hashlib.md5()
-    md5.update(secret)
-    secret = md5.hexdigest()
 
-    filter = {"phone":phone}
-    
-    doc = {"$set":{"secret":secret}} 
+    __kickout__(phone, socket)
 
-    Member_Mix.update_one(filter, doc)
+    secret = make_secret(phone, uuid)    
+
+    customer = {
+        "id": str(member_mix['_id']),
+        "phone": member_mix['phone'],
+        "socket": socket
+    }
+
+    add_online_customer(customer)
+   
     pack_data.phone  = phone
     pack_data.secret = secret
     pack_data.uuid   = uuid 
     pack_data.error_code = member_pb2.SUCCESS
     common.send(socket, member_pb2.LOGIN, pack_data)
-
-#验证码校验
-def verify_authcode(socket, data):
-    unpack_data = member_pb2.Verify_Authcode_Request()
-    unpack_data.ParseFromString(data)
-    phone = unpack_data.phone.strip()
-    authcode = unpack_data.authcode
-    
-    pack_data = member_pb2.Verify_Authcode_Response()
-
-    if not helper.verify_phone(phone):
-        pack_data.error_code = member_pb2.ERROR_PHONE_INVALID
-        common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
-        return
-    
-    filter = {
-        "phone": phone,
-        "authcode" : authcode
-    }
-    member_mix = Member_Mix.find_one(filter)
-    if member_mix is None or member_mix['authcode'] != authcode:
-        pack_data.error_code = member_pb2.ERROR_AUTHCODE_INVALID
-        common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
-        print 'authcode invalid:%s' % (authcode)
-        return
-    elif member_mix['expired'] < int(time.time()):
-        pack_data.error_code = member_pb2.ERROR_AUTHCODE_EXPIRED
-        common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
-        print 'authcode expired'
-        return
-    pack_data.error_code = member_pb2.SUCCESS
-    common.send(socket, member_pb2.VERIFY_AUTHCODE, pack_data)
-    print 'verify authcode success'
-
+    sync_order(socket)
+ 
 #请求验证码
 def request_authcode(socket, data):
     unpack_data = member_pb2.Request_Authcode_Request()
@@ -216,10 +239,37 @@ def request_authcode(socket, data):
     response = helper.send_sms(text, phone[3:])
     print 'request authcode response:%s' % (response)
 
-def get_secret(phone):
-    member = server.get_online_customer_by_phone(phone)
-    if member is None:
-        filter = {"phone":phone}
-        member_mix = Member_Mix.find_one(filter)
-        return member_mix.get('secret')
-    return member.get('secret')
+#生成令牌
+def make_secret(phone, uuid):
+    now = time.time()
+    elements = [str(now)]
+    elements.append(base.APPKEY)
+    elements.append(uuid)
+    elements.append(helper.get_random(6))
+    elements.append(phone)
+    secret = ''.join(elements)
+    md5 = hashlib.md5()
+    md5.update(secret)
+    secret = md5.hexdigest()
+    filter = {"phone": phone}
+    update = {"$set":{"secret":secret}}
+    Member_Mix.update_one(filter, update)
+    return secret
+
+#校验签名
+def verify_signature(phone, uuid, signature):
+    filter = {"phone":phone}
+    customer = Member_Mix.find_one(filter)
+    if customer is None:
+        return False
+    signature2 = [customer['secret']]
+    signature2.append(base.APPKEY)
+    signature2.append(uuid)
+    signature2.append(phone)
+
+    signature2 = ''.join(signature2)
+    md5 = hashlib.md5()
+    md5.update(signature2)
+    signature2 = md5.hexdigest()
+
+    return signature2 == signature

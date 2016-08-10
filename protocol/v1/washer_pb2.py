@@ -14,11 +14,11 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='washer.proto',
   package='',
-  serialized_pb='\n\x0cwasher.proto\"\xb4\x01\n\x06Washer\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04nick\x18\x02 \x01(\t\x12\r\n\x05phone\x18\x03 \x01(\t\x12\x14\n\x0c\x61vatar_small\x18\x04 \x01(\t\x12\x12\n\navatar_mid\x18\x05 \x01(\t\x12\x12\n\navatar_big\x18\x06 \x01(\t\x12\r\n\x05level\x18\x07 \x01(\x02\x12\x10\n\x08reg_time\x18\x08 \x01(\x05\x12\x12\n\nlast_login\x18\t \x01(\x05\x12\x0e\n\x06status\x18\n \x01(\x05\"<\n\x18Request_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x11\n\tsignature\x18\x02 \x02(\t\"N\n\x19Request_Authcode_Response\x12\x10\n\x08\x61uthcode\x18\x01 \x01(\x05\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code\"\xbe\x01\n\x10Register_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\x12\x10\n\x08password\x18\x03 \x02(\t\x12\x18\n\x10\x63onfirm_password\x18\x04 \x02(\t\x12\x0c\n\x04nick\x18\x05 \x02(\t\x12\x11\n\tsignature\x18\x06 \x02(\t\x12\x14\n\x0c\x61vatar_small\x18\x07 \x01(\t\x12\x12\n\navatar_mid\x18\x08 \x01(\t\x12\x12\n\navatar_big\x18\t \x01(\t\"]\n\x11Register_Response\x12\x17\n\x06washer\x18\x01 \x01(\x0b\x32\x07.Washer\x12\x0e\n\x06secret\x18\x02 \x01(\t\x12\x1f\n\nerror_code\x18\x03 \x02(\x0e\x32\x0b.Error_Code\"V\n\rLogin_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x11\n\twasher_id\x18\x03 \x01(\t\x12\x11\n\tsignature\x18\x04 \x01(\t\"Z\n\x0eLogin_Response\x12\x17\n\x06washer\x18\x01 \x01(\x0b\x32\x07.Washer\x12\x0e\n\x06secret\x18\x02 \x01(\t\x12\x1f\n\nerror_code\x18\x03 \x02(\x0e\x32\x0b.Error_Code\"M\n\x17Verify_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\x12\x11\n\tsignature\x18\x03 \x02(\t\";\n\x18Verify_Authcode_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\"K\n\x16\x46resh_Location_Request\x12\x0c\n\x04\x63ity\x18\x01 \x02(\t\x12\x11\n\tlongitude\x18\x02 \x02(\x02\x12\x10\n\x08latitude\x18\x03 \x02(\x02\":\n\x17\x46resh_Location_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code*|\n\x08Protocol\x12\x0e\n\nUNKNOW_CMD\x10\x00\x12\x0e\n\x08REGISTER\x10\xd0\xf7\x07\x12\x0b\n\x05LOGIN\x10\xd1\xf7\x07\x12\x16\n\x10REQUEST_AUTHCODE\x10\xd2\xf7\x07\x12\x15\n\x0fVERIFY_AUTHCODE\x10\xd3\xf7\x07\x12\x14\n\x0e\x46RESH_LOCATION\x10\xd4\xf7\x07*\xb9\x02\n\nError_Code\x12\x0b\n\x07SUCCESS\x10\x00\x12\x1c\n\x16\x45RROR_PASSWORD_INVALID\x10\xd0\xf7\x07\x12\x1e\n\x18\x45RROR_PASSWORD_NOT_EQUAL\x10\xd1\xf7\x07\x12\x18\n\x12\x45RROR_WASHER_EXIST\x10\xd2\xf7\x07\x12\x1c\n\x16\x45RROR_AUTHCODE_INVALID\x10\xd3\xf7\x07\x12\x1c\n\x16\x45RROR_AUTHCODE_EXPIRED\x10\xd4\xf7\x07\x12\x19\n\x13\x45RROR_PHONE_INVALID\x10\xd5\xf7\x07\x12\x1c\n\x16\x45RROR_WASHER_NOT_FOUND\x10\xd6\xf7\x07\x12\x1d\n\x17\x45RROR_SIGNATURE_EXPIRED\x10\xd7\xf7\x07\x12\x1d\n\x17\x45RROR_SIGNATURE_INVALID\x10\xd8\xf7\x07\x12\x13\n\rERROR_KICKOUT\x10\xd9\xf7\x07')
+  serialized_pb='\n\x0cwasher.proto\"\xeb\x01\n\x06Washer\x12\n\n\x02id\x18\x01 \x02(\t\x12\x0c\n\x04nick\x18\x02 \x01(\t\x12\r\n\x05phone\x18\x03 \x01(\t\x12\x14\n\x0c\x61vatar_small\x18\x04 \x01(\t\x12\x12\n\navatar_mid\x18\x05 \x01(\t\x12\x12\n\navatar_big\x18\x06 \x01(\t\x12\r\n\x05level\x18\x07 \x01(\x02\x12\x10\n\x08reg_time\x18\x08 \x01(\x05\x12\x12\n\nlast_login\x18\t \x01(\x05\x12\x0e\n\x06status\x18\n \x01(\x05\x12\x10\n\x08\x64istance\x18\x0b \x01(\x02\x12\x11\n\tlongitude\x18\x0c \x01(\x02\x12\x10\n\x08latitude\x18\r \x01(\x02\"<\n\x18Request_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x11\n\tsignature\x18\x02 \x02(\t\"N\n\x19Request_Authcode_Response\x12\x10\n\x08\x61uthcode\x18\x01 \x01(\x05\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code\"\xbe\x01\n\x10Register_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\x12\x10\n\x08password\x18\x03 \x02(\t\x12\x18\n\x10\x63onfirm_password\x18\x04 \x02(\t\x12\x0c\n\x04nick\x18\x05 \x02(\t\x12\x11\n\tsignature\x18\x06 \x02(\t\x12\x14\n\x0c\x61vatar_small\x18\x07 \x01(\t\x12\x12\n\navatar_mid\x18\x08 \x01(\t\x12\x12\n\navatar_big\x18\t \x01(\t\"]\n\x11Register_Response\x12\x17\n\x06washer\x18\x01 \x01(\x0b\x32\x07.Washer\x12\x0e\n\x06secret\x18\x02 \x01(\t\x12\x1f\n\nerror_code\x18\x03 \x02(\x0e\x32\x0b.Error_Code\"Q\n\rLogin_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x0c\n\x04uuid\x18\x03 \x01(\t\x12\x11\n\tsignature\x18\x04 \x01(\t\"Z\n\x0eLogin_Response\x12\x17\n\x06washer\x18\x01 \x01(\x0b\x32\x07.Washer\x12\x0e\n\x06secret\x18\x02 \x01(\t\x12\x1f\n\nerror_code\x18\x03 \x02(\x0e\x32\x0b.Error_Code\"M\n\x17Verify_Authcode_Request\x12\r\n\x05phone\x18\x01 \x02(\t\x12\x10\n\x08\x61uthcode\x18\x02 \x02(\x05\x12\x11\n\tsignature\x18\x03 \x02(\t\";\n\x18Verify_Authcode_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\"K\n\x16\x46resh_Location_Request\x12\x0c\n\x04\x63ity\x18\x01 \x02(\t\x12\x11\n\tlongitude\x18\x02 \x02(\x02\x12\x10\n\x08latitude\x18\x03 \x02(\x02\":\n\x17\x46resh_Location_Response\x12\x1f\n\nerror_code\x18\x01 \x02(\x0e\x32\x0b.Error_Code\"H\n\x13Near_Washer_Request\x12\x0c\n\x04\x63ity\x18\x01 \x02(\t\x12\x11\n\tlongitude\x18\x02 \x02(\x02\x12\x10\n\x08latitude\x18\x03 \x02(\x02\"P\n\x14Near_Washer_Response\x12\x17\n\x06washer\x18\x01 \x03(\x0b\x32\x07.Washer\x12\x1f\n\nerror_code\x18\x02 \x02(\x0e\x32\x0b.Error_Code*\x91\x01\n\nHWProtocol\x12\x0e\n\nUNKNOW_CMD\x10\x00\x12\x0e\n\x08REGISTER\x10\xd0\xf7\x07\x12\x0b\n\x05LOGIN\x10\xd1\xf7\x07\x12\x16\n\x10REQUEST_AUTHCODE\x10\xd2\xf7\x07\x12\x15\n\x0fVERIFY_AUTHCODE\x10\xd3\xf7\x07\x12\x14\n\x0e\x46RESH_LOCATION\x10\xd4\xf7\x07\x12\x11\n\x0bNEAR_WASHER\x10\xd5\xf7\x07*\xd1\x02\n\nError_Code\x12\x0b\n\x07SUCCESS\x10\x00\x12\x1c\n\x16\x45RROR_PASSWORD_INVALID\x10\xd0\xf7\x07\x12\x1e\n\x18\x45RROR_PASSWORD_NOT_EQUAL\x10\xd1\xf7\x07\x12\x18\n\x12\x45RROR_WASHER_EXIST\x10\xd2\xf7\x07\x12\x1c\n\x16\x45RROR_AUTHCODE_INVALID\x10\xd3\xf7\x07\x12\x1c\n\x16\x45RROR_AUTHCODE_EXPIRED\x10\xd4\xf7\x07\x12\x19\n\x13\x45RROR_PHONE_INVALID\x10\xd5\xf7\x07\x12\x1c\n\x16\x45RROR_WASHER_NOT_FOUND\x10\xd6\xf7\x07\x12\x1d\n\x17\x45RROR_SIGNATURE_EXPIRED\x10\xd7\xf7\x07\x12\x1d\n\x17\x45RROR_SIGNATURE_INVALID\x10\xd8\xf7\x07\x12\x13\n\rERROR_KICKOUT\x10\xd9\xf7\x07\x12\x16\n\x10\x45RROR_BADREQEUST\x10\xda\xf7\x07')
 
-_PROTOCOL = _descriptor.EnumDescriptor(
-  name='Protocol',
-  full_name='Protocol',
+_HWPROTOCOL = _descriptor.EnumDescriptor(
+  name='HWProtocol',
+  full_name='HWProtocol',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -46,14 +46,18 @@ _PROTOCOL = _descriptor.EnumDescriptor(
       name='FRESH_LOCATION', index=5, number=130004,
       options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='NEAR_WASHER', index=6, number=130005,
+      options=None,
+      type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=1086,
-  serialized_end=1210,
+  serialized_start=1293,
+  serialized_end=1438,
 )
 
-Protocol = enum_type_wrapper.EnumTypeWrapper(_PROTOCOL)
+HWProtocol = enum_type_wrapper.EnumTypeWrapper(_HWPROTOCOL)
 _ERROR_CODE = _descriptor.EnumDescriptor(
   name='Error_Code',
   full_name='Error_Code',
@@ -104,11 +108,15 @@ _ERROR_CODE = _descriptor.EnumDescriptor(
       name='ERROR_KICKOUT', index=10, number=130009,
       options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='ERROR_BADREQEUST', index=11, number=130010,
+      options=None,
+      type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=1213,
-  serialized_end=1526,
+  serialized_start=1441,
+  serialized_end=1778,
 )
 
 Error_Code = enum_type_wrapper.EnumTypeWrapper(_ERROR_CODE)
@@ -118,6 +126,7 @@ LOGIN = 130001
 REQUEST_AUTHCODE = 130002
 VERIFY_AUTHCODE = 130003
 FRESH_LOCATION = 130004
+NEAR_WASHER = 130005
 SUCCESS = 0
 ERROR_PASSWORD_INVALID = 130000
 ERROR_PASSWORD_NOT_EQUAL = 130001
@@ -129,6 +138,7 @@ ERROR_WASHER_NOT_FOUND = 130006
 ERROR_SIGNATURE_EXPIRED = 130007
 ERROR_SIGNATURE_INVALID = 130008
 ERROR_KICKOUT = 130009
+ERROR_BADREQEUST = 130010
 
 
 
@@ -209,6 +219,27 @@ _WASHER = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='distance', full_name='Washer.distance', index=10,
+      number=11, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='longitude', full_name='Washer.longitude', index=11,
+      number=12, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='latitude', full_name='Washer.latitude', index=12,
+      number=13, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -219,7 +250,7 @@ _WASHER = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=17,
-  serialized_end=197,
+  serialized_end=252,
 )
 
 
@@ -253,8 +284,8 @@ _REQUEST_AUTHCODE_REQUEST = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=199,
-  serialized_end=259,
+  serialized_start=254,
+  serialized_end=314,
 )
 
 
@@ -288,8 +319,8 @@ _REQUEST_AUTHCODE_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=261,
-  serialized_end=339,
+  serialized_start=316,
+  serialized_end=394,
 )
 
 
@@ -372,8 +403,8 @@ _REGISTER_REQUEST = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=342,
-  serialized_end=532,
+  serialized_start=397,
+  serialized_end=587,
 )
 
 
@@ -414,8 +445,8 @@ _REGISTER_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=534,
-  serialized_end=627,
+  serialized_start=589,
+  serialized_end=682,
 )
 
 
@@ -441,7 +472,7 @@ _LOGIN_REQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='washer_id', full_name='Login_Request.washer_id', index=2,
+      name='uuid', full_name='Login_Request.uuid', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -463,8 +494,8 @@ _LOGIN_REQUEST = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=629,
-  serialized_end=715,
+  serialized_start=684,
+  serialized_end=765,
 )
 
 
@@ -505,8 +536,8 @@ _LOGIN_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=717,
-  serialized_end=807,
+  serialized_start=767,
+  serialized_end=857,
 )
 
 
@@ -547,8 +578,8 @@ _VERIFY_AUTHCODE_REQUEST = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=809,
-  serialized_end=886,
+  serialized_start=859,
+  serialized_end=936,
 )
 
 
@@ -575,8 +606,8 @@ _VERIFY_AUTHCODE_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=888,
-  serialized_end=947,
+  serialized_start=938,
+  serialized_end=997,
 )
 
 
@@ -617,8 +648,8 @@ _FRESH_LOCATION_REQUEST = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=949,
-  serialized_end=1024,
+  serialized_start=999,
+  serialized_end=1074,
 )
 
 
@@ -645,8 +676,85 @@ _FRESH_LOCATION_RESPONSE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=1026,
-  serialized_end=1084,
+  serialized_start=1076,
+  serialized_end=1134,
+)
+
+
+_NEAR_WASHER_REQUEST = _descriptor.Descriptor(
+  name='Near_Washer_Request',
+  full_name='Near_Washer_Request',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='city', full_name='Near_Washer_Request.city', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='longitude', full_name='Near_Washer_Request.longitude', index=1,
+      number=2, type=2, cpp_type=6, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='latitude', full_name='Near_Washer_Request.latitude', index=2,
+      number=3, type=2, cpp_type=6, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1136,
+  serialized_end=1208,
+)
+
+
+_NEAR_WASHER_RESPONSE = _descriptor.Descriptor(
+  name='Near_Washer_Response',
+  full_name='Near_Washer_Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='washer', full_name='Near_Washer_Response.washer', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='error_code', full_name='Near_Washer_Response.error_code', index=1,
+      number=2, type=14, cpp_type=8, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=1210,
+  serialized_end=1290,
 )
 
 _REQUEST_AUTHCODE_RESPONSE.fields_by_name['error_code'].enum_type = _ERROR_CODE
@@ -656,6 +764,8 @@ _LOGIN_RESPONSE.fields_by_name['washer'].message_type = _WASHER
 _LOGIN_RESPONSE.fields_by_name['error_code'].enum_type = _ERROR_CODE
 _VERIFY_AUTHCODE_RESPONSE.fields_by_name['error_code'].enum_type = _ERROR_CODE
 _FRESH_LOCATION_RESPONSE.fields_by_name['error_code'].enum_type = _ERROR_CODE
+_NEAR_WASHER_RESPONSE.fields_by_name['washer'].message_type = _WASHER
+_NEAR_WASHER_RESPONSE.fields_by_name['error_code'].enum_type = _ERROR_CODE
 DESCRIPTOR.message_types_by_name['Washer'] = _WASHER
 DESCRIPTOR.message_types_by_name['Request_Authcode_Request'] = _REQUEST_AUTHCODE_REQUEST
 DESCRIPTOR.message_types_by_name['Request_Authcode_Response'] = _REQUEST_AUTHCODE_RESPONSE
@@ -667,6 +777,8 @@ DESCRIPTOR.message_types_by_name['Verify_Authcode_Request'] = _VERIFY_AUTHCODE_R
 DESCRIPTOR.message_types_by_name['Verify_Authcode_Response'] = _VERIFY_AUTHCODE_RESPONSE
 DESCRIPTOR.message_types_by_name['Fresh_Location_Request'] = _FRESH_LOCATION_REQUEST
 DESCRIPTOR.message_types_by_name['Fresh_Location_Response'] = _FRESH_LOCATION_RESPONSE
+DESCRIPTOR.message_types_by_name['Near_Washer_Request'] = _NEAR_WASHER_REQUEST
+DESCRIPTOR.message_types_by_name['Near_Washer_Response'] = _NEAR_WASHER_RESPONSE
 
 class Washer(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType
@@ -733,6 +845,18 @@ class Fresh_Location_Response(_message.Message):
   DESCRIPTOR = _FRESH_LOCATION_RESPONSE
 
   # @@protoc_insertion_point(class_scope:Fresh_Location_Response)
+
+class Near_Washer_Request(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _NEAR_WASHER_REQUEST
+
+  # @@protoc_insertion_point(class_scope:Near_Washer_Request)
+
+class Near_Washer_Response(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _NEAR_WASHER_RESPONSE
+
+  # @@protoc_insertion_point(class_scope:Near_Washer_Response)
 
 
 # @@protoc_insertion_point(module_scope)
