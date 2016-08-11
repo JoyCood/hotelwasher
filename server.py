@@ -7,35 +7,54 @@ import socket
 from config import (mapper, base)
 from importlib import import_module as loader
 
-
 online_washer = dict()
 online_washer_mapper = dict()
 online_customer = dict()
 online_customer_mapper = dict()
 
 class Request_Handler(SocketServer.BaseRequestHandler):
-    def handle(self):
+    def setup(self):
+        print 'Request_Handler.setup() calling...'
         self.request.settimeout(base.SOCKET_RECEIVE_TIMEOUT)
-        running = True
-        while running:
-            try:
-                header = self.request.recv(base.SOCKET_HEADER_LENGTH)
-            except socket.error as e:
-                print 'close the socket'
-                self.request.close()
-                running = False
-            else:
-                print repr(header)
-                (body_len, api, protocol, num, sys) = struct.unpack('>5I', header)
-                print("body_len:%s api:%s protocol:%s num:%s sys:%s") % (body_len, api, protocol, num, sys)
-                body = self.request.recv(body_len)
-                __router__(self.request, api, protocol, body)
+
+    def handle(self):
+        while True:
+            header = self.request.recv(base.SOCKET_HEADER_LENGTH)
+            (body_len, api, protocol, num, sys) = struct.unpack('>5I', header)
+            print("body_len:%s api:%s protocol:%s num:%s sys:%s") % (body_len, api, protocol, num, sys)
+            body = self.request.recv(body_len)
+            __router__(self.request, api, protocol, body)
+
+    #handle()执行完会执行此方法
+    def finish(self):
+        pass
 
 class Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
+    timeout = base.SERVER_TIMEOUT
+    
+    #有连接进来，会调用此方法
     def verify_request(self, request, client_address):
-        print 'verify_request called...'
         return True
 
+    def server_close(self):
+        self.socket.close()
+
+    """
+    服务器在timeout的时候内没有连接进来会调用此方法    
+    调handle_request()时有效
+    """
+   # def handle_timeout(self):
+   #     print 'handle_timeout callled...'
+   #     self.handle_request() #继续等待客户端连接
+    
+    """
+    如果Request_Handler发生异常会调用此方法
+    如果Reqeust_Handler发生异常，会关闭socket连接,底层会调用shutdown_request()方法
+    如有异常可以在里做一些数据清理，保存
+    """
+    def handle_error(self, request, client_address):
+        print 'eeeeeeeeeeeeeee'
+        SocketServer.TCPServer.handle_error(self, request, client_address)
 
 def __router__(socket, api, protocol, data):
     """ 分发到对应的业务模块处理业务 """
@@ -48,15 +67,15 @@ def __router__(socket, api, protocol, data):
     if model is None: #找不到对应模块
         print 'model not found'
         return
-    model = loader('.'+model, api)
+    model = loader('.' + model, api)
     model.handle(socket, protocol, data)
 
 def __start_server__():
-    with daemon.DaemonContext():
+    daemon.DaemonContext():
         server = Server((base.SERVER_HOST, base.SERVER_PORT), Request_Handler)
         server.serve_forever()
 
-def stop_server():
+def __stop_server__():
     pass
 
 def restart():
@@ -91,7 +110,9 @@ def remove_online_washer_by_socket(socket):
     except (TypeError, KeyError):
         pass
     return True
+
 #--------------------------------------------
+
 def add_online_customer(member):
     online_customer[member['phone']] = member
     online_customer_mapper[member['socket']] = member['phone']
