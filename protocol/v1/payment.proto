@@ -1,0 +1,53 @@
+syntax = "proto2";
+enum Payment_Protocol {
+    UNKNOW_CMD = 0;
+    WECHAT = 140000;
+    ALIPAY = 140001;
+}
+
+enum Payment_Error_Code {
+    ERROR_ORDER_NOT_FOUND = 140000;
+    ERROR_PREPAY_FAILURE  = 140001;
+}
+
+message Wechat {
+    required string appid     = 1;
+    required string noncestr  = 2;
+    required string packages  = 3;
+    required string partnerid = 4;
+    required int32  timestamp = 5;
+}
+
+message Alipay {
+    required string body          = 1;
+    required string seller_id     = 2;
+    required float  total_fee     = 3;
+    required string services      = 4;
+    required string input_charset = 5;
+    required string it_b_pay      = 6;
+    required string out_trade_no  = 7;
+    required string payment_type  = 8;
+    required string notify_url    = 9;
+    required string sign_type     = 10;
+    required string partner       = 11;
+    required string sign          = 12;
+    required string subject       = 13;
+}
+
+message Wechat_Request {
+    required string order_id = 1;
+}
+
+message Wechat_Response {
+    optional Wechat paramters = 1;
+    required Payment_Error_Code error_code = 7;
+}
+
+message Alipay_Request {
+    required string order_id = 1;
+}
+
+message Alipay_Response {
+   optional Alipay paramters = 1;
+   required Payment_Error_Code error_code = 2; 
+}

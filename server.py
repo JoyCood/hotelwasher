@@ -4,6 +4,8 @@
 import sys, time, logging, struct, SocketServer
 import daemon
 import socket
+
+import common
 from config import (mapper, base)
 from importlib import import_module as loader
 
@@ -37,6 +39,7 @@ class Server(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
         return True
 
     def server_close(self):
+        self.shutdown()
         self.socket.close()
 
     """
@@ -71,7 +74,7 @@ def __router__(socket, api, protocol, data):
     model.handle(socket, protocol, data)
 
 def __start_server__():
-    daemon.DaemonContext():
+    #with daemon.DaemonContext():
         server = Server((base.SERVER_HOST, base.SERVER_PORT), Request_Handler)
         server.serve_forever()
 

@@ -11,11 +11,11 @@ import hashlib
 
 def place_order(socket):
     pb = order_pb2.Place_Order_Request()
-    pb.city = u'杭州'
+    pb.city_code = 179
     pb.type = order_pb2.NORMAL
-    pb.total = 2
-    pb.longitude = 119.8916952
-    pb.latitude = 30.2616855
+    pb.quantity = 2
+    pb.longitude = 120.21937542
+    pb.latitude = 30.25924446
     common.send(socket, order_pb2.PLACE_ORDER, pb)
     body = common.get(socket)
     

@@ -62,6 +62,11 @@ def login(socket, data):
     common.send(socket, washer_pb2.LOGIN, pack_data)
 
 def __login__(socket, phone, password):
+    """ 密码登录
+      - socket
+      - phone    手机号码
+      - password 密码
+    """
     md5 = hashlib.md5()
     md5.update(password)
     password = md5.hexdigest();
@@ -100,8 +105,15 @@ def __login__(socket, phone, password):
     washer['id'] = str(washer['_id'])
     del washer['_id']
     add_online_washer(washer)
+    sync_order(socket)
 
 def __reconnect__(socket, phone, uuid, signature):
+    """ 断线重连 
+      - socket
+      - phone     手机号码
+      - uuid      设备号
+      - signature 签名
+    """
     pack_data = washer_pb2.Login_Response()
 
     valid = verify_signature(phone, uuid, signature) 
@@ -137,38 +149,31 @@ def __reconnect__(socket, phone, uuid, signature):
     sync_order(socket)
 
 def sync_order(socket):
+    """ 检查正在处理中的订单
+      - socket
+    """
     washer = get_online_washer_by_socket(socket)
     filter = {
             "washer_phone": washer['phone'], 
-            "order_status":{
-                "$neq":order_pb2.RESTORED
-            }
+            "order_status": order_pb2.DISTRIBUTED
     }
     order = Order.find_one(filter)
 
-    pack_data = order_pb2.Sync_Order_Response()
+    pack_data = order_pb2.Washer_Processing_Order_Response()
 
     if order is None:
         pack_data.error_code = order_pb2.SUCCESS
-        common.send(socket, order_pb2.SYNC_ORDER, pack_data)
+        common.send(socket, order_pb2.WASHER_PROCESSING_ORDER, pack_data)
         return
 
-    washer['customer'] = {
-            "phone":order['customer_phone'],
-            "order_id":str(order['_id']),
-            "longitude": order['longitude'],
-            "latitude": order['latitude']
-    }
-
-    add_online_washer(washer)
-
-    pack_data.order_id = str(order['_id'])
-    pack_data.customer_phone = order['customer_phone']
-    pack_data.longitude = order['longitude']
-    pack_data.latitude  = order['latitude']
+    pack_data.order_id   = str(order['_id'])
+    pack_data.phone      = order['customer_phone']
+    pack_data.longitude  = order['longitude']
+    pack_data.latitude   = order['latitude']
+    pack_data.price      = order['price']
     pack_data.error_code = order_pb2.SUCCESS
 
-    common.send(socket, order_pb2.SYNC_ORDER, pack_data)
+    common.send(socket, order_pb2.WASHER_PROCESSING_ORDER, pack_data)
         
 #注册
 def register(socket, data):
@@ -336,13 +341,20 @@ def request_authcode(socket, data):
     text =  "【趣游泳】您的验证码是是" + str(authcode)
     response = helper.send_sms(text, phone[3:])
 
+def start_work(socket, data):
+    pass
+
+def close_work(socket, data):
+    pass
+
 #更新商家地理位置
 def fresh_location(socket, data):
     washer = get_online_washer_by_socket(socket)
+        
     pack_data = washer_pb2.Fresh_Location_Response()
    
     #已派单或不在线的商家禁止更新地理位置
-    if washer is None or 'customer' in washer:
+    if washer is None:
         pack_data.error_code = washer_pb2.SUCCESS
         common.send(socket, washer_pb2.FRESH_LOCATION, pack_data)
         return
@@ -350,17 +362,13 @@ def fresh_location(socket, data):
     unpack_data = washer_pb2.Fresh_Location_Request()
     unpack_data.ParseFromString(data)
 
-    city      = unpack_data.city.strip().encode('utf-8')
+    city_code = unpack_data.city_code
     longitude = unpack_data.longitude
     latitude  = unpack_data.latitude
    
-    md5 = hashlib.md5() 
-    md5.update(city)
-    city = md5.hexdigest()
-
     exploder = ' '
     cmd = ['GEOADD']
-    cmd.append(city)
+    cmd.append(str(city_code))
     cmd.append(str(longitude))
     cmd.append(str(latitude))
     cmd.append(washer['phone'])
@@ -376,60 +384,6 @@ def fresh_location(socket, data):
         pack_data.error_code = washer_pb2.ERROR_FRESH_LOCATION_FAILURE
         common.send(socket, washer_pb2.FRESH_LOCATION, pack_data)
         return
-
-#查找附近的商家
-def find_near_washer(socket, data):
-    unpack_data = washer_pb2.Near_Washer_Request()
-    unpack_data.ParseFromString(data)
-    
-    city = unpack_data.city.strip().encode('utf-8')
-    longitude = unpack_data.longitude
-    latitude  = unpack_data.latitude
-    
-    md5 = hashlib.md5()
-    md5.update(city)
-    city = md5.hexdigest()
-
-    exploder = ' '
-
-    cmd = ['GEORADIUS']
-    cmd.append(city)
-    cmd.append(str(longitude))
-    cmd.append(str(latitude))
-    cmd.append('3 km WITHDIST WITHCOORD') #3km内的商家
-    cmd = exploder.join(cmd)
-    
-    pack_data = washer_pb2.Near_Washer_Response()
-
-    washers = common.redis.execute_command(cmd)
-
-    for item in washers:
-        phone     = item[0]
-        distance  = item[1]
-        longitude = item[2][0]
-        latitude  = item[2][1]
-
-        washer = get_online_washer_by_phone(phone)
-
-        if washer is None:
-            filter = {"phone":phone}
-            washer = Washer.find_one(filter)
-            if washer is None:
-                continue
-            washer['id'] = str(washer['_id'])
-            del washer['_id']
-
-        washer_tmp = pack_data.washer.add()
-        washer_tmp.id = washer['id']
-        washer_tmp.nick = washer['nick']
-        washer_tmp.phone = washer['phone']
-        washer_tmp.avatar_small = washer['avatar_small']
-        washer_tmp.level = washer['level']
-        washer_tmp.longitude = float(longitude)
-        washer_tmp.latitude = float(latitude)
-    
-    pack_data.error_code = washer_pb2.SUCCESS
-    common.send(socket, washer_pb2.NEAR_WASHER, pack_data)
 
 #生成令牌
 def make_secret(phone):

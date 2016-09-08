@@ -1,18 +1,35 @@
-enum HWProtocol {
+syntax = "proto2";
+
+enum Member_Protocol {
     UNKNOW_CMD       = 0;
     LOGIN            = 110000; //登录
     REQUEST_AUTHCODE = 110001; //发送验证码
     KICKOUT          = 110002; //踢下线
 }
 
-enum Error_Code {
+enum Member_Error_Code {
     SUCCESS = 0;
     ERROR_AUTHCODE_INVALID   = 110001; //验证码不对
     ERROR_PHONE_INVALID      = 110002; //手机号不对
     ERROR_AUTHCODE_EXPIRED   = 110003; //验证码过期
     ERROR_MEMBER_NOT_FOUND   = 110004; //找不到用户
-    ERROR_KICKOUT            = 110005; //被踢下线
-    ERROR_BADREQUEST         = 110006; //参数不对
+    ERROR_BADREQUEST         = 110005; //参数不对
+}
+
+message Member_Washer {
+    required string id           = 1;
+    optional string nick         = 2;
+    optional string phone        = 3;
+    optional string avatar_small = 4;
+    optional string avatar_mid   = 5;
+    optional string avatar_big   = 6;
+    optional float  level        = 7;
+    optional int32  reg_time     = 8;
+    optional int32  last_login   = 9;
+    optional int32  status       = 10;
+    optional float  distance     = 11;
+    optional float  longitude    = 12;
+    optional float  latitude     = 13;
 }
 
 //登录
@@ -31,12 +48,7 @@ message Login_Response {
     optional string phone  = 1;
     optional string secret = 2;
     optional string uuid   = 3;
-    required Error_Code error_code = 4;
-}
-
-//被踢下线
-message Kickout_Response {
-    required Error_Code error_code = 1;
+    required Member_Error_Code error_code = 4;
 }
 
 //发送验证码
@@ -46,5 +58,16 @@ message Request_Authcode_Request {
 
 message Request_Authcode_Response {
     optional int32 authcode        = 1;
-    required Error_Code error_code = 2;
+    required Member_Error_Code error_code = 2;
+}
+
+message Near_Washer_Request {
+    required int32  city_code = 1;
+    required float  longitude = 2;
+    required float  latitude  = 3;
+}
+
+message Near_Washer_Response {
+    repeated Member_Washer washer = 1;
+    required Member_Error_Code error_code = 2;
 }

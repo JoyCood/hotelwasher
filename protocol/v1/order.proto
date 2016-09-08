@@ -1,24 +1,24 @@
-enum HWProtocol {
-    UNKNOW_CMD     = 0;
-    PLACE_ORDER    = 120000;
-    CANCEL_ORDER   = 120001;
-    UNFINISH_ORDER = 120002;
-    ORDER_LIST     = 120003;
-    ORDER_FEEDBACK = 120004;
-    ORDER_PAY      = 120005;
-    ALLOCATE_ORDER = 120006;
-    SYNC_ORDER     = 120007;
+syntax = "proto2";
+
+enum Protocol {
+    UNKNOW_CMD                = 0;
+    PLACE_ORDER               = 120000;
+    WASHER_CANCEL_ORDER       = 120001;
+    ORDER_LIST                = 120002;
+    ORDER_FEEDBACK            = 120003;
+    ALLOCATE_ORDER            = 120004;
+    WASHER_PROCESSING_ORDER   = 120005;
+    CUSTOMER_PROCESSING_ORDER = 120006;
+    CUSTOMER_CANCEL_ORDER     = 120007;
+    ORDER_DELIVERED           = 120008; //取件
 }
 
 enum Error_Code {
     SUCCESS = 0;
     ERROR_CANNOT__CANCEL_ORDER = 120000;
     ERROR_NOT_WASHER_FOUND = 120001;
-}
-
-enum Event {
-    NEW = 0; //取新数据
-    OLD = 1; //取老数据   
+    ERROR_NOT_LOGGIN = 120002;
+    ERROR_ORDER_CANCELED = 120003;
 }
 
 enum Order_Type {
@@ -27,18 +27,16 @@ enum Order_Type {
 }
 
 enum Order_Status {
-    PLACED      = 0; //未派发
     DISTRIBUTED = 1; //已派发
     DELIVERED   = 2; //已取件
-    RESTORED    = 3; //已送回
-    PAYED       = 4; //已支付
-    CANCELED    = 5; //已取消
-    WAIT_PAY    = 6; //待支付
+    PAYED       = 3; //已支付
+    CANCELED    = 4; //已取消
 }
 
-enum Customer_Type {
-    GUEST  = 1;
-    MEMBER = 2;
+enum User_Type {
+    GUEST    = 1; //H5用户
+    MEMBER   = 2; //APP用户
+    WASHER   = 3; //商家
 }
 
 message Washer {
@@ -51,48 +49,58 @@ message Washer {
 }
 
 message Order {
-    required string id             = 1; //订单id
-    required string customer       = 2; //客户电话号码
-    required string washer         = 3; //商家手机号
-    required int32  total          = 4; //数量
-    required float  price          = 5; //价格
+    required string id                 = 1; //订单id
+    required string customer           = 2; //客户电话号码
+    required string washer             = 3; //商家手机号
+    required int32  quantity           = 4; //数量
+    required float  price              = 5; //价格
     required Order_Status order_status = 6; //订单状态
-    required int32  order_type     = 7;  //普通洗｜专业洗
-    required int32  order_time     = 8;  //下单时间
-    required Customer_Type  customer_type  = 9;
-    required int32  pay_status     = 10;  
-    optional int32  pay_from       = 11; //支付渠道 [1:支付宝 2:微信]
-    optional int32  cancel_by      = 12; //取消方 [1:用户取消 2:商家取消]
-    optional float  discount       = 13; //折扣
-    optional int32  feedback       = 14; //已评分 [0:未评分 1:已评分]
-    optional float  score          = 15; //得分
+    required int32  order_type         = 7;  //普通洗｜专业洗
+    required int32  order_time         = 8;  //下单时间
+    required User_Type customer_type   = 9;  //用户类型
+    required int32  pay_status         = 10; //订单状态 
+    optional int32  pay_from           = 11; //支付渠道 [1:支付宝 2:微信]
+    optional int32  cancel_by          = 12; //取消方 [1:用户取消 2:商家取消]
+    optional float  discount           = 13; //折扣
+    optional float  score              = 14; //得分
 }
 
+//下单
 message Place_Order_Request {
-    required string city       = 1; //当前城市
+    required int32  city_code  = 1; //当前城市
     required int32  type       = 2; //普通话 ｜ 专业洗
-    required int32  total      = 3; //数量
+    required int32  quantity   = 3; //数量
     required float  longitude  = 4; //经度
     required float  latitude   = 5; //纬度
     optional string address    = 6; //下单所在位置
 }
 
 message Place_Order_Response {
-    optional Washer washer = 1;
-    optional string order_id = 2;
-    optional float  price = 3;
-    optional int32  total = 4;
+    optional Washer washer         = 1;
+    optional string order_id       = 2;
+    optional float  price          = 3;
+    optional int32  quantity       = 4;
     optional Order_Type order_type = 5;
     required Error_Code error_code = 6;
 }
 
+//订单列表
 message Order_List_Request {
-    optional int32  offset = 3;
-    optional int32  limit  = 4;
-    optional Event  event  = 5;
+    optional int32  offset = 1;
+    optional int32  limit  = 2;
+    required Error_Code error_code = 3;
 }
 
 message Order_List_Response {
+    message Order {
+        required string order_id = 1;
+        required Order_Status order_status = 2;
+        required float price = 3;
+        required int32 quantity = 4;
+        required int32 order_time = 5;
+        required string washer_id = 6;
+        required string washer_nick = 7;
+    }
     repeated Order order = 1;
     required Error_Code error_code = 2;
 }
@@ -106,21 +114,25 @@ message Allocate_Order_Response {
     required Error_Code error_code = 5; 
 }
 
-//商家未完成的订单
-message Sync_Washer_Order_Response {
-    optional string order_id = 1;
-    optional string customer_phone = 2;
-    optional float  longitude = 3;
-    optional float  latitude = 4;
-    required Error_Code error_code = 5;
+//商家处理中的订单
+message Washer_Processing_Order_Response {
+    required string order_id   = 1;
+    required string phone      = 2;
+    required float  price      = 3;
+    required float  longitude  = 4;
+    required float  latitude   = 5;
+    optional string nick       = 6;
+    optional int32  order_time = 7;
+    optional Order_Status order_status = 8;
+    required Error_Code error_code = 9;
 }
 
-//用户未完成的订单
-message Sync_Customer_Order_Response {
-    optional string order_id = 1;
-    optional int32  total    = 2;
-    optional float  price    = 3;
-    optional int32  order_type = 4;
-    optional Washer washer = 5;
+//客户未完成的订单
+message Customer_Processing_Order_Response {
+    required string order_id = 1;
+    required int32  quantity = 2;
+    required Order_Type order_type = 3;
+    required float  price = 4;
+    required Washer washer = 5;
     required Error_Code error_code = 6;
 }

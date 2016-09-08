@@ -1,14 +1,15 @@
-enum HWProtocol {
+syntax = "proto2";
+
+enum Washer_Protocol {
     UNKNOW_CMD       = 0;
     REGISTER         = 130000; //注册
     LOGIN            = 130001; //登录
     REQUEST_AUTHCODE = 130002; //请求验证码
     VERIFY_AUTHCODE  = 130003; //验证手机号
     FRESH_LOCATION   = 130004; //更新位置
-    NEAR_WASHER      = 130005; //附近的商家
 }
 
-enum Error_Code {
+enum Washer_Error_Code {
     SUCCESS = 0;
     ERROR_PASSWORD_INVALID   = 130000; //密码错误
     ERROR_PASSWORD_NOT_EQUAL = 130001; //两个密码不一致
@@ -46,7 +47,7 @@ message Request_Authcode_Request {
 
 message Request_Authcode_Response {
     optional int32 authcode = 1;
-    required Error_Code error_code = 2;
+    required Washer_Error_Code error_code = 2;
 }
 
 message Register_Request {
@@ -64,7 +65,7 @@ message Register_Request {
 message Register_Response {
     optional Washer washer         = 1;
     optional string secret         = 2;
-    required Error_Code error_code = 3;
+    required Washer_Error_Code error_code = 3;
 }
 
 message Login_Request {
@@ -77,7 +78,7 @@ message Login_Request {
 message Login_Response {
     optional Washer washer         = 1;
     optional string secret         = 2;
-    required Error_Code error_code = 3;
+    required Washer_Error_Code error_code = 3;
 }
 
 message Verify_Authcode_Request {
@@ -87,26 +88,16 @@ message Verify_Authcode_Request {
 }
 
 message Verify_Authcode_Response {
-    required Error_Code error_code = 1;
+    required Washer_Error_Code error_code = 1;
 }
 
 message Fresh_Location_Request {
-    required string city      = 1; 
+    required int32  city_code = 1; 
     required float  longitude = 2;
     required float  latitude  = 3; 
 }
 
 message Fresh_Location_Response {
-    required Error_Code error_code = 1;
+    required Washer_Error_Code error_code = 1;
 }
 
-message Near_Washer_Request {
-    required string city = 1;
-    required float  longitude = 2;
-    required float  latitude = 3;
-}
-
-message Near_Washer_Response {
-    repeated Washer washer = 1;
-    required Error_Code error_code = 2;
-}

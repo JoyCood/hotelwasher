@@ -1,10 +1,12 @@
 #!/usr/bin/python 
 # -*- coding: utf-8 -*-
 
-from model.member.main import Member
 from model.member.mix  import Member_Mix
 from model.order.main import Order
-from protocol.v1 import (member_pb2, order_pb2)
+from protocol.v1 import (
+        member_pb2, 
+        order_pb2,
+        washer_pb2)
 from config import (mapper, base)
 from helper import helper
 from bson.objectid import ObjectId 
@@ -38,7 +40,7 @@ def __kickout__(phone,socket):
     if customer and customer['socket'] != socket:
         print 'customer socket:%s socket2:%s' % (customer['socket'], socket)
         pack_data = member_pb2.Login_Response()
-        pack_data.error_code = member_pb2.ERROR_KICKOUT
+        pack_data.error_code = member_pb2.SUCCESS
         common.send(customer['socket'], member_pb2.KICKOUT, pack_data)
         customer['socket'].close()
 
@@ -101,11 +103,11 @@ def sync_order(socket):
          
     order = Order.find_one(filter)
 
-    pack_data = order_pb2.Sync_Customer_Order_Response()
+    pack_data = order_pb2.Customer_Processing_Order_Response()
 
     if order is None:
         pack_data.error_code = order_pb2.SUCCESS
-        common.send(socket, order_pb2.SYNC_ORDER, pack_data)
+        common.send(socket, order_pb2.CUSTOMER_PROCESSING_ORDER, pack_data)
         return
     
     washer = get_online_washer_by_phone(order['washer_phone'])
@@ -117,17 +119,8 @@ def sync_order(socket):
             washer['id'] = str(washer['_id'])
             del washer['_id']
 
-    customer['washer'] = {
-        "phone": order['washer_phone'],
-        "nick": washer['nick'],
-        "level": washer['level'],
-        "order_id": str(order['_id'])
-    }
-    
-    add_online_customer(customer)
-
     pack_data.order_id     = str(order['_id'])
-    pack_data.total        = order['total']
+    pack_data.quantity     = order['quantity']
     pack_data.price        = order['price']
     pack_data.order_type   = order['order_type']
     pack_data.washer.id    = washer['id']
@@ -273,3 +266,53 @@ def verify_signature(phone, uuid, signature):
     signature2 = md5.hexdigest()
 
     return signature2 == signature
+
+#查找附近的商家
+def find_near_washer(socket, data):
+    unpack_data = member_pb2.Near_Washer_Request()
+    unpack_data.ParseFromString(data)
+    
+    city_code = unpack_data.city_code
+    longitude = unpack_data.longitude
+    latitude  = unpack_data.latitude
+
+    exploder = ' '
+
+    cmd = ['GEORADIUS']
+    cmd.append(str(city_code))
+    cmd.append(str(longitude))
+    cmd.append(str(latitude))
+    cmd.append('3 km WITHDIST WITHCOORD') #3km内的商家
+    cmd = exploder.join(cmd)
+    
+    pack_data = member_pb2.Near_Washer_Response()
+
+    washers = common.redis.execute_command(cmd)
+
+    for item in washers:
+        phone     = item[0]
+        distance  = item[1]
+        longitude = item[2][0]
+        latitude  = item[2][1]
+
+        washer = get_online_washer_by_phone(phone)
+
+        if washer is None:
+            filter = {"phone":phone}
+            washer = Washer.find_one(filter)
+            if washer is None:
+                continue
+            washer['id'] = str(washer['_id'])
+            del washer['_id']
+
+        washer_tmp = pack_data.washer.add()
+        washer_tmp.id = washer['id']
+        washer_tmp.nick = washer['nick']
+        washer_tmp.phone = washer['phone']
+        washer_tmp.avatar_small = washer['avatar_small']
+        washer_tmp.level = washer['level']
+        washer_tmp.longitude = float(longitude)
+        washer_tmp.latitude = float(latitude)
+    
+    pack_data.error_code = washer_pb2.SUCCESS
+    common.send(socket, member_pb2.NEAR_WASHER, pack_data)

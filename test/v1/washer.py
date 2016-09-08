@@ -12,22 +12,23 @@ WASHER_PHONE = '+8613533332421'
 
 def fresh_location(socket):
     pb = washer_pb2.Fresh_Location_Request()
-    pb.longitude = 119.8916952
-    pb.latitude = 30.2616855
-    pb.city = u'杭州'
+    pb.longitude = 120.21937542
+    pb.latitude  = 30.25924446
+    pb.city_code = 179
 
     common.send(socket, washer_pb2.FRESH_LOCATION, pb)
     body = common.get(socket)
     if body:
         resp = washer_pb2.Fresh_Location_Response()
         resp.ParseFromString(body)
-        print resp
+        print 'fresh_location result:'
+        print resp.error_code
 
 def get_near_washer(socket):
     pb = washer_pb2.Near_Washer_Request()
-    pb.city = u'杭州'
-    pb.longitude = 119.8916952
-    pb.latitude  = 30.2616855
+    pb.city_code = 179
+    pb.longitude = 120.21937542
+    pb.latitude  = 30.25924446
     common.send(socket, washer_pb2.NEAR_WASHER, pb)
     body = common.get(socket)
     if body:
